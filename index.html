@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sánchez Sport Bar control de inventarios v1</title>
+    <!-- Carga de Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de SheetJS (xlsx) para leer archivos Excel --><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f9;
+        }
+        /* Estilo para la tarjeta principal, imitando un ambiente deportivo */
+        .inventory-card {
+            background: linear-gradient(145deg, #ffffff, #e6e6e6);
+            box-shadow: 10px 10px 30px #d1d9e6, -10px -10px 30px #ffffff;
+        }
+        /* Estilo para los botones */
+        .btn-primary {
+            background-color: #dc2626; /* Rojo deportivo */
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: #b91c1c;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-secondary {
+            background-color: #2563eb; /* Azul */
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #1e40af;
+        }
+        .btn-export {
+            background-color: #10b981; /* Verde esmeralda para exportar */
+            transition: all 0.2s ease;
+        }
+        .btn-export:hover {
+            background-color: #059669;
+        }
+        .btn-returns {
+            background-color: #f59e0b; /* Naranja para devoluciones */
+            transition: all 0.2s ease;
+        }
+        .btn-returns:hover {
+            background-color: #d97706;
+        }
+        .btn-reset {
+            background-color: #71717a; /* Gris para reset */
+            transition: all 0.2s ease;
+        }
+        .btn-reset:hover {
+            background-color: #52525b;
+        }
+
+        /* Estilos del modal */
+        .modal {
+            background-color: rgba(0, 0, 0, 0.5);
+            transition: opacity 0.2s ease-in-out;
+        }
+        .modal-content {
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+        /* Estilo para tablas que se vean bien en móvil (responsividad) */
+        .table-sticky-header thead th {
+            position: sticky;
+            top: 0;
+            background-color: #f7f7f7;
+            z-index: 10;
+        }
+        /* Estilo para el logo */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-bottom: 1rem;
+        }
+        /* MODIFICADO: Estilo para las iniciales SSB */
+        .initials-logo {
+            font-size: 3rem; /* Tamaño grande para las iniciales */
+            font-weight: 900; /* Extra bold */
+            border: 4px solid #dc2626; /* Borde rojo */
+            border-radius: 50%; /* Circular */
+            width: 120px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffffff; /* Fondo blanco */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .initials-logo .s, .initials-logo .b {
+            color: #dc2626; /* Rojo */
+        }
+        .initials-logo .p {
+            color: #2563eb; /* Azul */
+        }
+
+        /* Estilo específico para la tabla de cierre de caja */
+        .cash-balance-table th, .cash-balance-table td {
+            padding: 0.75rem;
+        }
+        .input-cash {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            width: 100%;
+            text-align: right;
+        }
+        .fixed-output {
+            background-color: #f3f4f6;
+            font-weight: 600;
+            text-align: right;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="min-h-screen p-2 sm:p-4 md:p-8">
+        <header class="text-center mb-8">
+            <div class="logo-container">
+                <!-- MODIFICADO: Logo con iniciales SSB --><div class="initials-logo">
+                    <span class="s">S</span><span class="p">P</span><span class="b">B</span>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mt-3">Sánchez Sport Bar control de inventarios v1</h1>
+            </div>
+            <p class="text-gray-600 text-sm sm:text-base">Proceso de dos usuarios: **Entrega (Stock Inicial + Valores)** y **Cierre (Conteo Final)**.</p>
+            <div id="user-info" class="mt-4 p-2 bg-red-100 text-red-700 rounded-lg text-xs sm:text-sm">
+                Cargando usuario...
+            </div>
+        </header>
+
+        <!-- Tarjeta 1: REGISTRO DE ENTREGA (ROL: Quien entrega/añade stock + Valores) --><div class="inventory-card max-w-4xl mx-auto p-4 md:p-8 rounded-xl mb-10">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">1. Registrar Stock Inicial / Adición (Entrega)</h2>
+
+            <!-- SECCIÓN: IMPORTAR CSV/EXCEL --><div class="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
+                <h3 class="text-lg font-semibold mb-3 text-blue-600">Opción B: Importar Stock Inicial (CSV/Excel)</h3>
+                <!-- MODIFICADO --><p class="text-sm text-gray-700 mb-3">Sube un archivo de texto/CSV o Excel (.xls, .xlsx) con la lista de productos y la cantidad recibida. Los precios y costos se tomarán automáticamente de la lista maestra.</p>
+                <code class="block bg-gray-100 p-2 rounded-lg text-xs mb-3 text-gray-800 font-mono">Formato: Columna A: Producto, Columna B: Unidades Entregadas</code>
+                <!-- MODIFICADO: accept --><input type="file" id="csv-file-input" accept=".csv, .txt, .xls, .xlsx" class="mb-3 w-full p-2 border border-blue-300 rounded-lg text-sm">
+                <button id="import-csv-btn" class="btn-secondary w-full text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
+                    ⬆️ Subir y Abrir Conteo Masivo
+                </button>
+                <div id="import-message" class="w-full text-center text-sm mt-2 hidden"></div>
+            </div>
+            <!-- FIN DE SECCIÓN IMPORTAR --><h3 class="text-lg font-semibold mb-3 text-gray-800">Opción A: Registro Manual (Recomendado para pocas unidades)</h3>
+            <form id="delivery-form" class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="col-span-2 md:col-span-1">
+                    <label for="delivery-item-name" class="block text-sm font-medium text-gray-700 mb-1">Producto Entregado</label>
+                    <select id="delivery-item-name" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500">
+                        <option value="" disabled selected>Selecciona un producto</option>
+                    </select>
+                </div>
+                <div class="col-span-1 md:col-span-1">
+                    <label for="quantity-delivered" class="block text-sm font-medium text-gray-700 mb-1">Unidades Entregadas</label>
+                    <input type="number" id="quantity-delivered" required min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500" placeholder="Ej: 30">
+                </div>
+                <!-- CAMPOS FINANCIEROS (Se llenan automáticamente) --><div class="col-span-1 md:col-span-1">
+                    <label for="sale-price" class="block text-sm font-medium text-gray-700 mb-1">Precio Venta (Unidad)</label>
+                    <input type="number" id="sale-price" required min="0" step="100" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-gray-50" placeholder="0" readonly>
+                </div>
+                <div class="col-span-1 md:col-span-1">
+                    <label for="unit-cost" class="block text-sm font-medium text-gray-700 mb-1">Costo Unitario (Unidad)</label>
+                    <input type="number" id="unit-cost" required min="0" step="100" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-gray-50" placeholder="0" readonly>
+                </div>
+                <div class="col-span-2 md:col-span-1 pt-0 md:pt-8"> <!-- Ajuste de padding para alineación --><button type="submit" class="btn-primary w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
+                        Abrir/Añadir Stock
+                    </button>
+                </div>
+                <div id="delivery-form-message" class="col-span-2 md:col-span-5 text-center text-sm mt-2 hidden"></div>
+            </form>
+        </div>
+
+        <!-- Tarjeta 2: INVENTARIO PENDIENTE DE CIERRE (ROL: Quien recibe/cierra) --><div class="inventory-card max-w-6xl mx-auto p-4 md:p-8 rounded-xl mb-10">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">2. Inventario Abierto Pendiente de Cierre</h2>
+            
+            <!-- SECCIÓN: REGISTRO RÁPIDO DE DEVOLUCIONES --><h3 class="text-lg font-semibold mb-3 text-red-600">Registro Rápido de Devoluciones (Solo Rol 2)</h3>
+            <form id="return-form" class="flex flex-col sm:flex-row gap-4 mb-6 p-4 border border-orange-200 rounded-lg bg-orange-50">
+                <div class="flex-grow">
+                    <label for="returns-count" class="block text-sm font-medium text-gray-700 mb-1">Cantidad de Cervezas Devueltas</label>
+                    <input type="number" id="returns-count" required min="1" class="w-full p-3 border border-orange-300 rounded-lg focus:ring-orange-500 focus:border-orange-500" placeholder="Ej: 15">
+                </div>
+                <div class="sm:pt-7">
+                    <button type="submit" class="btn-returns w-full sm:w-auto text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
+                        Registrar Devoluciones y Cerrar
+                    </button>
+                </div>
+                <div id="return-form-message" class="w-full text-center text-sm mt-2 hidden"></div>
+            </form>
+            <!-- FIN DE SECCIÓN DEVOLUCIONES --><h3 class="text-lg font-semibold mb-3 text-gray-800">Cierres Pendientes de Stock (Bebidas/Comida)</h3>
+            <div id="open-inventory-list-container" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Producto</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidades Recibidas</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Apertura</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="open-inventory-list" class="bg-white divide-y divide-gray-200">
+                        <tr><td colspan="4" class="p-4 text-center text-gray-500">Cargando ítems abiertos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tarjeta 3: HISTORIAL CERRADO --><div class="inventory-card max-w-full mx-auto p-4 md:p-8 rounded-xl mb-10">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-2">
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">3. Historial de Inventario Cerrado (Consumo y Ganancia)</h2>
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-2 sm:mt-0">
+                    <!-- Botón de reinicio de stock abierto --><button id="reset-open-stock-btn" class="btn-reset text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
+                        🔄 Reiniciar Stock Abierto
+                    </button>
+                    <!-- NUEVO: Botón de reinicio de historial cerrado --><button id="reset-closed-history-btn" class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
+                        🗑️ Reiniciar Historial Cerrado
+                    </button>
+                    <!-- MODIFICADO: Texto del botón de descarga directa --><button id="export-btn" class="btn-export text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
+                        ⬇️ Descargar Reporte (Excel)
+                    </button>
+                </div>
+            </div>
+            
+            <!-- ELIMINADO: Contenedor del enlace de descarga --><div id="closed-inventory-list-container" class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 table-sticky-header">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Producto</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recibidas (Entrada)</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restantes (Salida)</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo (Usadas)</th>
+                            <!-- COLUMNAS FINANCIERAS --><th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venta Unit.</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Unit.</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ganancia Bruta</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Cierre</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="closed-inventory-list" class="bg-white divide-y divide-gray-200">
+                        <!-- Los datos cerrados se insertarán aquí por JavaScript --></tbody>
+                </table>
+                <div id="closed-loading-message" class="text-center py-8 text-gray-500">Cargando historial...</div>
+            </div>
+        </div>
+
+        <!-- Tarjeta 4: CIERRE DE CAJA / BALANCE FINANCIERO --><div class="inventory-card max-w-xs mx-auto p-4 md:p-6 rounded-xl">
+            <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">4. Cierre de Caja / Balance Financiero</h2>
+            <div class="flex flex-col space-y-3">
+                
+                <!-- EFECTIVO --><div class="flex justify-between items-center">
+                    <label for="cash-efectivo" class="text-sm font-medium text-gray-700">Efectivo:</label>
+                    <input type="number" id="cash-efectivo" min="0" value="0" step="1000" class="input-cash w-32 calculate-cash-input">
+                </div>
+                
+                <!-- NEQUI --><div class="flex justify-between items-center">
+                    <label for="cash-nequi" class="text-sm font-medium text-gray-700">Nequi:</label>
+                    <input type="number" id="cash-nequi" min="0" value="0" step="1000" class="input-cash w-32 calculate-cash-input">
+                </div>
+                
+                <!-- DAVIPLATA --><div class="flex justify-between items-center">
+                    <label for="cash-daviplata" class="text-sm font-medium text-gray-700">Daviplata:</label>
+                    <input type="number" id="cash-daviplata" min="0" value="0" step="1000" class="input-cash w-32 calculate-cash-input">
+                </div>
+
+                <!-- DEUDAS --><div class="flex justify-between items-center border-t pt-3">
+                    <label for="cash-deudas" class="text-sm font-medium text-red-600">Deudas (Crédito):</label>
+                    <input type="number" id="cash-deudas" min="0" value="0" step="1000" class="input-cash w-32 calculate-cash-input">
+                </div>
+                
+                <!-- VENTA BRUTA (NUEVO) --><div class="flex justify-between items-center">
+                    <span class="text-base font-bold text-gray-800">VENTA BRUTA ESPERADA (Consumo):</span>
+                    <span id="gross-sales-expected" class="fixed-output text-base text-purple-700 w-32">0</span>
+                </div>
+
+                <!-- GANANCIA BRUTA (CONTROL) --><div class="flex justify-between items-center">
+                    <span class="text-base font-bold text-gray-800">GANANCIA BRUTA (Control):</span>
+                    <span id="sales-expected" class="fixed-output text-base text-blue-700 w-32">0</span>
+                </div>
+
+                <!-- TOTAL RINDES --><div class="flex justify-between items-center border-t border-gray-400 pt-3">
+                    <span class="text-base font-bold text-gray-800">TOTAL RINDES (Efectivo+Digital+Deudas):</span>
+                    <span id="cash-total" class="fixed-output text-base text-green-700 w-32">0</span>
+                </div>
+               
+                <!-- BALANCE (TOTAL RINDES vs VENTA BRUTA) --><div class="flex justify-between items-center border-t border-gray-400 pt-3">
+                    <span class="text-xl font-extrabold text-gray-900">BALANCE:</span>
+                    <span id="cash-balance" class="fixed-output text-xl text-red-700 w-32">0</span>
+                </div>
+
+                <p class="text-xs text-gray-500 pt-2 text-center">El Balance muestra la diferencia entre la Venta Bruta Esperada y el Total que se rinde.</p>
+            </div>
+        </div>
+
+
+    </div>
+    
+    <!-- Modal para Cierre de Conteo --><div id="close-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
+        <div class="modal-content bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
+            <h3 class="text-xl font-bold mb-4">Cerrar Inventario: <span id="modal-item-name" class="text-red-600"></span></h3>
+            <p class="mb-4 text-gray-600 text-sm">Unidades Iniciales/Recibidas: <span id="modal-received-count" class="font-bold"></span></p>
+            <form id="close-form">
+                <input type="hidden" id="modal-doc-id">
+                <div class="mb-4">
+                    <label for="units-remaining-input" class="block text-sm font-medium text-gray-700 mb-1">Unidades Restantes (Conteo Final)</label>
+                    <input type="number" id="units-remaining-input" required min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500" placeholder="0">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-close" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg font-semibold hover:bg-gray-400">Cancelar</button>
+                    <button type="submit" class="btn-secondary text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
+                        Confirmar Cierre
+                    </button>
+                </div>
+                <div id="close-modal-message" class="text-center text-sm mt-3 hidden"></div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Firebase SDKs y Script de la Aplicación --><script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, addDoc, query, onSnapshot, doc, deleteDoc, updateDoc, where, getDoc, getDocs
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuración de Firestore para depuración
+        setLogLevel('Debug');
+
+        // Estructura: { name, sale, cost }
+        const PRODUCT_DATA = [
+            { name: "Whiskey Botella", sale: 70000, cost: 50000 },
+            { name: "Whiskey 1/2", sale: 40000, cost: 25000 },
+            { name: "Whiskey 1/4", sale: 55000, cost: 40000 },
+            { name: "Smirnoff Botella", sale: 70000, cost: 40000 },
+            { name: "Smirnoff 1/2", sale: 40000, cost: 20000 },
+            { name: "Ron 1/2", sale: 40000, cost: 28000 },
+            { name: "Nectar Botella", sale: 60000, cost: 38000 },
+            { name: "Nectar", sale: 32000, cost: 20000 },
+            { name: "Antioqueño Azul", sale: 38000, cost: 26000 },
+            { name: "Antioqueño Verde", sale: 35000, cost: 23000 },
+            { name: "Amarillo Botella", sale: 70000, cost: 47000 },
+            { name: "Amarillo 1/2", sale: 40000, cost: 23000 },
+            { name: "Tequila", sale: 70000, cost: 50000 },
+            { name: "Like", sale: 4500, cost: 3000 },
+            { name: "Smirnoff Ice", sale: 10000, cost: 5500 },
+            { name: "Cuates", sale: 6000, cost: 4500 },
+            { name: "Corona", sale: 6000, cost: 3700 },
+            { name: "Coronita", sale: 4000, cost: 2800 },
+            { name: "Budwaiser", sale: 3200, cost: 2200 },
+            { name: "Pony Malta", sale: 3200, cost: 2200 },
+            { name: "Hit", sale: 3200, cost: 2200 },
+            { name: "Sporade", sale: 3200, cost: 2200 },
+            { name: "Agua", sale: 2000, cost: 1000 },
+            { name: "Cocacola", sale: 3200, cost: 2200 },
+            { name: "Club", sale: 4000, cost: 3000 },
+            { name: "Reds", sale: 4500, cost: 3000 },
+            { name: "Costeña Negra", sale: 3200, cost: 1700 },
+            // Costeña Verde
+            { name: "Costeña Verde", sale: 3200, cost: 1500 }, 
+            // Light (simplificado)
+            { name: "Light", sale: 3500, cost: 2500 }, 
+            { name: "Aguila", sale: 3200, cost: 2200 },
+            { name: "Poker", sale: 3200, cost: 2200 },
+            { name: "Doritos", sale: 3200, cost: 1600 },
+            { name: "Papas", sale: 3200, cost: 2000 },
+            { name: "Detodtito", sale: 3500, cost: 2400 },
+            { name: "Todorico", sale: 3500, cost: 2300 },
+            { name: "Latas", sale: 3500, cost: 2500 },
+            // VALORES ESPECIALES PARA DEVOLUCIONES
+            { name: "Cervezas Devueltas", sale: 1000, cost: 0 } 
+        ];
+        
+        // Variables Globales Proporcionadas por el Entorno
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : {
+            apiKey: "AIzaSyB-UuyKjp6XY4Tp-nwJC_IWq73GuPoiIoo",
+            authDomain: "control-inventarios-3b8ac.firebaseapp.com",
+            projectId: "control-inventarios-3b8ac",
+            storageBucket: "control-inventarios-3b8ac.firebasestorage.app",
+            messagingSenderId: "1073931280313",
+            appId: "1:1073931280313:web:140e4aadd2d88f6ff6a068",
+            measurementId: "G-FFB84CDHHR"
+        };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db, auth, userId = null;
+        let isAuthReady = false;
+        let closedInventoryData = []; // ALMACENA LOS DATOS CERRADOS PARA EXPORTACIÓN Y CAJA
+        let openInventoryData = []; // NUEVO: Almacena los datos abiertos para el reporte
+
+        // NUEVAS VARIABLES GLOBALES PARA EL CIERRE DE CAJA
+        let totalGrossSales = 0; // Total Venta Bruta
+        let totalGrossProfit = 0; // Total Ganancia Bruta (Control)
+        let totalCashRendition = 0; // Total Rindes
+
+        const deliveryForm = document.getElementById('delivery-form');
+        const deliveryItemSelect = document.getElementById('delivery-item-name'); 
+        const openInventoryList = document.getElementById('open-inventory-list');
+        const closedInventoryList = document.getElementById('closed-inventory-list');
+        const userInfoDiv = document.getElementById('user-info');
+        const deliveryFormMessage = document.getElementById('delivery-form-message');
+        const closedLoadingMessage = document.getElementById('closed-loading-message');
+        const exportButton = document.getElementById('export-btn');
+        // ELIMINADO: const downloadLinkContainer = document.getElementById('download-link-container');
+        const resetOpenStockBtn = document.getElementById('reset-open-stock-btn');
+        const resetClosedHistoryBtn = document.getElementById('reset-closed-history-btn');
+        
+        // ELIMINADO: Elementos de URL seleccionable
+        // const generatedUrlText = document.getElementById('generated-url-text');
+        // const copyUrlBtn = document.getElementById('copy-url-btn');
+
+        // Campos financieros
+        const salePriceInput = document.getElementById('sale-price');
+        const unitCostInput = document.getElementById('unit-cost');
+
+        // Formulario de Devoluciones (Nuevo)
+        const returnForm = document.getElementById('return-form');
+        const returnsCountInput = document.getElementById('returns-count');
+        const returnFormMessage = document.getElementById('return-form-message');
+
+        // Importación CSV
+        const importCsvBtn = document.getElementById('import-csv-btn');
+        const csvFileInput = document.getElementById('csv-file-input');
+        const importMessage = document.getElementById('import-message');
+
+        // Cierre de Caja
+        const efectivoInput = document.getElementById('cash-efectivo');
+        const nequiInput = document.getElementById('cash-nequi');
+        const daviplataInput = document.getElementById('cash-daviplata');
+        const deudasInput = document.getElementById('cash-deudas'); 
+        const totalCashSpan = document.getElementById('cash-total');
+        const grossSalesExpectedSpan = document.getElementById('gross-sales-expected'); // Venta Bruta
+        const salesExpectedSpan = document.getElementById('sales-expected'); // Ganancia Bruta
+        const cashBalanceSpan = document.getElementById('cash-balance');
+        const cashInputs = document.querySelectorAll('.calculate-cash-input');
+
+
+        // Modal elements
+        const closeModal = document.getElementById('close-modal');
+        const closeForm = document.getElementById('close-form');
+        // NOTE: currentOpenDocData is no longer strictly needed if we pass all data via button attributes
+
+        const modalDocId = document.getElementById('modal-doc-id');
+        const unitsRemainingInput = document.getElementById('units-remaining-input');
+        const modalItemName = document.getElementById('modal-item-name');
+        const modalReceivedCount = document.getElementById('modal-received-count');
+        const closeCancelBtn = document.getElementById('cancel-close');
+        const closeModalMessage = document.getElementById('close-modal-message');
+
+        // --- Funciones de Utilidad ---
+
+        function formatCurrency(amount) {
+            // Formatea como moneda COP (pesos colombianos)
+            if (typeof amount !== 'number') amount = parseFloat(amount) || 0;
+            return amount.toLocaleString('es-CO', { 
+                style: 'currency', 
+                currency: 'COP', 
+                minimumFractionDigits: 0 
+            });
+        }
+
+        function calculateAndDisplayCashBalance() {
+            // 1. CÁLCULO DE TOTALES DE INVENTARIO (Consumo)
+            let totalProfit = 0;
+            let totalSales = 0;
+            let totalCost = 0; // Para el reporte CSV
+
+            closedInventoryData.forEach(item => {
+                const usage = item.usage || 0;
+                const salePrice = item.salePrice || 0;
+                const unitCost = item.unitCost || 0;
+                
+                totalProfit += item.grossProfit || 0; // Sumar la ganancia calculada
+                totalSales += usage * salePrice; // Sumar la venta bruta (Consumo * Precio Venta)
+                totalCost += usage * unitCost; // Sumar el costo (Consumo * Costo Unitario)
+            });
+            
+            totalGrossProfit = totalProfit;
+            totalGrossSales = totalSales;
+
+
+            // 2. CÁLCULO DE TOTALES DE CAJA (Rendición)
+            const efectivo = parseInt(efectivoInput.value) || 0;
+            const nequi = parseInt(nequiInput.value) || 0;
+            const daviplata = parseInt(daviplataInput.value) || 0;
+            const deudas = parseInt(deudasInput.value) || 0; 
+            
+            // TOTAL RINDES = Efectivo + Nequi + Daviplata + Deudas 
+            const totalRecibido = efectivo + nequi + daviplata + deudas;
+            totalCashRendition = totalRecibido;
+
+            // 3. CÁLCULO DE BALANCE (Total Rendición - Venta Bruta Consumo)
+            const balance = totalRecibido - totalGrossSales;
+            
+            // 4. Actualizar la UI
+            grossSalesExpectedSpan.textContent = formatCurrency(totalGrossSales); // VENTA BRUTA (Consumo)
+            salesExpectedSpan.textContent = formatCurrency(totalGrossProfit); // GANANCIA BRUTA (Control)
+            totalCashSpan.textContent = formatCurrency(totalRecibido); // TOTAL RINDES
+            cashBalanceSpan.textContent = formatCurrency(balance);
+            
+            // Estilo para el Balance
+            cashBalanceSpan.classList.remove('text-red-700', 'text-green-700', 'text-gray-700');
+            if (balance < 0) {
+                cashBalanceSpan.classList.add('text-red-700'); // Faltante
+            } else if (balance > 0) {
+                cashBalanceSpan.classList.add('text-green-700'); // Sobrante
+            } else {
+                cashBalanceSpan.classList.add('text-gray-700'); // Cuadre perfecto
+            }
+        }
+        
+        // Asignar listeners a los inputs de caja
+        cashInputs.forEach(input => {
+            input.addEventListener('input', calculateAndDisplayCashBalance);
+        });
+
+        
+        function populateProductDropdown() {
+            PRODUCT_DATA.forEach(product => {
+                const option = document.createElement('option');
+                option.value = product.name;
+                option.textContent = product.name;
+                // Excluir 'Cervezas Devueltas' de la entrada manual
+                if (product.name !== "Cervezas Devueltas") {
+                    deliveryItemSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        }
+        
+        populateProductDropdown();
+
+        // Listener para autollenar precio/costo al seleccionar producto
+        deliveryItemSelect.addEventListener('change', () => {
+            const selectedName = deliveryItemSelect.value;
+            const product = PRODUCT_DATA.find(p => p.name === selectedName);
+
+            if (product) {
+                // Autocompletar los campos de solo lectura
+                salePriceInput.value = product.sale;
+                unitCostInput.value = product.cost;
+            } else {
+                salePriceInput.value = 0;
+                unitCostInput.value = 0;
+            }
+        });
+
+
+        async function fetchWithRetry(apiCall) {
+            const MAX_RETRIES = 5;
+            let delay = 1000;
+            
+            for (let i = 0; i < MAX_RETRIES; i++) {
+                try {
+                    const result = await apiCall();
+                    return result; 
+                } catch (error) {
+                    if (error.code && (error.code === 'resource-exhausted' || error.code === 'unauthenticated' || error.code === 'unavailable')) {
+                        console.warn(`API Error (${error.code}). Retrying in ${delay}ms...`, error.message);
+                    } else if (i === MAX_RETRIES - 1) {
+                        console.error('Max retries reached. Failing.', error);
+                        throw error;
+                    } else {
+                         console.warn(`API Error (${error.code || 'unknown'}). Retrying in ${delay}ms...`, error.message);
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; 
+                }
+            }
+        }
+
+        function showMessage(element, message, colorClass) {
+            // Ajuste para col-span-5 en el formulario de entrega
+            const isDeliveryForm = element.id === 'delivery-form-message' || element.id === 'import-message';
+            element.textContent = message;
+            element.className = `${isDeliveryForm ? 'col-span-2 md:col-span-5' : 'w-full'} text-center text-sm mt-2 ${colorClass}`;
+            element.classList.remove('hidden');
+            setTimeout(() => {
+                element.classList.add('hidden');
+            }, 5000);
+        }
+
+        // --- Inicialización y Autenticación de Firebase ---
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    userInfoDiv.innerHTML = `✅ Sesión activa. ID de Usuario: 
+                        <span class="font-mono text-xs bg-red-200 px-1 py-0.5 rounded">${userId}</span>`;
+                    isAuthReady = true;
+                    setupInventoryListener();
+                } else {
+                    try {
+                        if (initialAuthToken) {
+                            console.log("Attempting sign in with custom token...");
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            console.log("No custom token, attempting anonymous sign in...");
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Error de autenticación inicial:", error);
+                        userInfoDiv.textContent = '❌ Error al autenticar. Por favor, recarga la página.';
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error("Error al inicializar Firebase:", error);
+            userInfoDiv.textContent = '❌ Error de configuración de Firebase.';
+        }
+
+        // --- CRUD de Inventario ---
+
+        const INVENTORY_COLLECTION_PATH = `/artifacts/${appId}/public/data/weekly_inventory_sessions`;
+
+        /**
+         * Reinicia (elimina) todo el inventario que está en estado ABIERTO.
+         */
+        async function resetOpenInventory() {
+            if (!isAuthReady || !userId) {
+                console.error("Auth no está listo.");
+                showMessage(deliveryFormMessage, 'Error de autenticación. Por favor, recarga la página.', 'text-red-600');
+                return;
+            }
+            if (openInventoryData.length === 0) {
+                showMessage(deliveryFormMessage, 'No hay stock abierto para reiniciar.', 'text-blue-600');
+                return;
+            }
+
+            // Usamos una función simple de confirmación (custom modal)
+            const confirmElement = document.createElement('div');
+            confirmElement.className = 'modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] open';
+            confirmElement.innerHTML = `
+                <div class="modal-content bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                    <p class="mb-4 font-bold text-gray-700">¿Estás seguro de que quieres eliminar TODO el stock abierto? Esta acción no se puede deshacer.</p>
+                    <div class="flex justify-end space-x-3">
+                        <button id="confirm-cancel-reset" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancelar</button>
+                        <button id="confirm-reset-action" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Sí, Reiniciar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmElement);
+
+            document.getElementById('confirm-cancel-reset').onclick = () => {
+                document.body.removeChild(confirmElement);
+            };
+
+            document.getElementById('confirm-reset-action').onclick = async () => {
+                document.body.removeChild(confirmElement);
+                try {
+                    const deletePromises = openInventoryData.map(item => {
+                        return fetchWithRetry(() => deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, item.id)));
+                    });
+                    
+                    await Promise.all(deletePromises);
+                    
+                    showMessage(deliveryFormMessage, `✅ ¡Éxito! Se ha reiniciado todo el stock abierto.`, 'text-green-600');
+                } catch (e) {
+                    console.error("Error al reiniciar el stock abierto: ", e);
+                    showMessage(deliveryFormMessage, '❌ Error al intentar reiniciar el stock. Revisa la consola.', 'text-red-600');
+                }
+            };
+        }
+
+        /**
+         * NUEVO: Reinicia (elimina) todo el historial de inventario CERRADO.
+         */
+        async function resetClosedInventory() {
+            if (!isAuthReady || !userId) {
+                console.error("Auth no está listo.");
+                showMessage(deliveryFormMessage, 'Error de autenticación. Por favor, recarga la página.', 'text-red-600');
+                return;
+            }
+            if (closedInventoryData.length === 0) {
+                showMessage(deliveryFormMessage, 'No hay historial cerrado para reiniciar.', 'text-blue-600');
+                return;
+            }
+
+            const confirmElement = document.createElement('div');
+            confirmElement.className = 'modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] open';
+            confirmElement.innerHTML = `
+                <div class="modal-content bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                    <p class="mb-4 font-bold text-red-700">¡ADVERTENCIA! ¿Estás seguro de que quieres eliminar TODO el historial de inventario cerrado? Esta acción es PERMANENTE y no se puede deshacer.</p>
+                    <div class="flex justify-end space-x-3">
+                        <button id="confirm-cancel-reset-closed" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancelar</button>
+                        <button id="confirm-reset-action-closed" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Sí, Eliminar Historial</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmElement);
+
+            document.getElementById('confirm-cancel-reset-closed').onclick = () => {
+                document.body.removeChild(confirmElement);
+            };
+
+            document.getElementById('confirm-reset-action-closed').onclick = async () => {
+                document.body.removeChild(confirmElement);
+                try {
+                    const deletePromises = closedInventoryData.map(item => {
+                        return fetchWithRetry(() => deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, item.id)));
+                    });
+                    
+                    await Promise.all(deletePromises);
+                    
+                    showMessage(deliveryFormMessage, `✅ ¡Éxito! Se ha eliminado todo el historial de inventario cerrado.`, 'text-green-600');
+                } catch (e) {
+                    console.error("Error al reiniciar el historial cerrado: ", e);
+                    showMessage(deliveryFormMessage, '❌ Error al intentar eliminar el historial. Revisa la consola.', 'text-red-600');
+                }
+            };
+        }
+
+
+        /**
+         * Maneja el registro de entrega (Rol 1)
+         */
+        async function handleDelivery(itemName, quantity, salePrice, unitCost, messageElement) {
+            if (!isAuthReady || !userId) {
+                console.error("Auth no está listo.");
+                showMessage(messageElement, 'Error de autenticación. Por favor, recarga la página.', 'text-red-600');
+                return false;
+            }
+            
+            const unitProfit = salePrice - unitCost;
+            
+            try {
+                const q = query(collection(db, INVENTORY_COLLECTION_PATH), 
+                                where("itemName", "==", itemName),
+                                where("status", "==", "OPEN"));
+                
+                const querySnapshot = await fetchWithRetry(() => getDocs(q));
+                
+                if (!querySnapshot.empty) {
+                    // Si ya existe un documento abierto para este item, actualiza la cantidad
+                    const docToUpdate = querySnapshot.docs[0];
+                    const currentReceived = docToUpdate.data().received || 0;
+                    const newReceivedTotal = currentReceived + quantity;
+
+                    await fetchWithRetry(() => updateDoc(docToUpdate.ref, {
+                        received: newReceivedTotal,
+                        salePrice: salePrice, // Actualiza precios por si cambiaron
+                        unitCost: unitCost,
+                        unitProfit: unitProfit,
+                        dateOpened: new Date(), // Actualiza la fecha a la última adición
+                    }));
+                    console.log(`Stock de ${itemName} actualizado: ${currentReceived} + ${quantity} = ${newReceivedTotal}`);
+                    return `Stock de ${itemName} actualizado: ${newReceivedTotal}`;
+
+                } else {
+                    // Si no existe, crea un nuevo documento
+                    await fetchWithRetry(() => addDoc(collection(db, INVENTORY_COLLECTION_PATH), {
+                        itemName,
+                        received: quantity,
+                        salePrice: salePrice, 
+                        unitCost: unitCost,   
+                        unitProfit: unitProfit,
+                        remaining: 0, // Se establece en 0 al abrir
+                        status: 'OPEN', 
+                        openedBy: userId,
+                        dateOpened: new Date(),
+                        dateClosed: null,
+                        usage: 0,
+                        grossProfit: 0 
+                    }));
+                    console.log(`Nueva sesión de ${itemName} abierta.`);
+                    return `Nueva sesión de ${itemName} abierta con ${quantity} unidades.`;
+                }
+
+            } catch (e) {
+                console.error("Error al gestionar sesión de inventario: ", e);
+                showMessage(messageElement, `Error al gestionar la entrada de ${itemName}. Revisa la consola.`, 'text-red-600');
+                return false;
+            }
+        }
+
+        /**
+         * Maneja el cierre de inventario (Rol 2)
+         */
+        async function handleCloseInventory(docId, remaining, unitProfit, receivedCount) {
+             if (!isAuthReady || !userId) {
+                console.error("Auth no está listo.");
+                return false;
+            }
+
+            try {
+                const docRef = doc(db, INVENTORY_COLLECTION_PATH, docId);
+                
+                const usage = receivedCount - remaining; // Unidades consumidas
+                const grossProfit = usage * unitProfit; // Ganancia bruta de esta sesión
+
+
+                await fetchWithRetry(() => updateDoc(docRef, {
+                    remaining: remaining,
+                    usage: usage,
+                    grossProfit: grossProfit,
+                    status: 'CLOSED', 
+                    closedBy: userId,
+                    dateClosed: new Date(),
+                }));
+
+                console.log(`Sesión ${docId} cerrada.`);
+                return true;
+            } catch (e) {
+                console.error("Error al cerrar sesión de inventario: ", e);
+                showMessage(closeModalMessage, 'Error al cerrar el inventario. Revisa la consola.', 'text-red-600');
+                return false;
+            }
+        }
+
+        /**
+         * Maneja el registro rápido de Cervezas Devueltas (Rol 2)
+         */
+        async function handleQuickReturnRegistration(returnsCount) {
+            if (!isAuthReady || !userId) {
+                console.error("Auth no está listo.");
+                return;
+            }
+
+            const RETURN_ITEM_NAME = "Cervezas Devueltas";
+            const productData = PRODUCT_DATA.find(p => p.name === RETURN_ITEM_NAME);
+            
+            if (!productData) {
+                showMessage(returnFormMessage, 'Error: Producto "Cervezas Devueltas" no encontrado en la lista maestra.', 'text-red-600');
+                return;
+            }
+
+            const { sale: salePrice, cost: unitCost } = productData;
+            const unitProfit = salePrice - unitCost;
+            
+            const usage = returnsCount; // En devoluciones, el "uso" es la cantidad devuelta
+            const grossProfit = usage * unitProfit; // Esto será negativo o cero (costo 0, precio 1000)
+
+            try {
+                // Se crea y se cierra en la misma transacción
+                const docRef = await fetchWithRetry(() => addDoc(collection(db, INVENTORY_COLLECTION_PATH), {
+                    itemName: RETURN_ITEM_NAME,
+                    received: returnsCount, // Se reciben N
+                    remaining: 0, // Se devuelven N (quedan 0)
+                    salePrice: salePrice, 
+                    unitCost: unitCost,   
+                    unitProfit: unitProfit,
+                    usage: usage,
+                    grossProfit: grossProfit,
+                    status: 'CLOSED', // Se cierra inmediatamente
+                    openedBy: userId,
+                    closedBy: userId,
+                    dateOpened: new Date(),
+                    dateClosed: new Date(),
+                }));
+                console.log("Sesión de devoluciones cerrada con ID: ", docRef.id);
+                showMessage(returnFormMessage, `✅ ${returnsCount} devoluciones registradas correctamente.`, 'text-green-600');
+            } catch (e) {
+                console.error("Error al registrar devoluciones: ", e);
+                showMessage(returnFormMessage, 'Error al registrar devoluciones. Revisa la consola.', 'text-red-600');
+            }
+        }
+        
+        // --- MODIFICADO: Lógica de Importación (CSV, TXT, XLS, XLSX) ---
+
+        function detectDelimiter(text) {
+            // Detecta tabulador, punto y coma, o coma
+            if (text.includes('\t')) return '\t';
+            if (text.includes(';')) return ';';
+            if (text.includes(',')) return ',';
+            return '\t'; // Default a tabulador si no se encuentra
+        }
+
+        /**
+         * NUEVA FUNCIÓN: Procesa los datos (array de arrays) de CSV o Excel.
+         * Reemplaza a parseAndProcessCSV.
+         * @param {Array<Array<string|number>>} dataRows - Array de filas, ej: [["Producto", "Unidades"], ["Poker", 10]]
+         */
+        async function processImportedData(dataRows) {
+            if (!isAuthReady || !userId) {
+                showMessage(importMessage, 'Error de autenticación. Por favor, recarga la página.', 'text-red-600');
+                return;
+            }
+            
+            // Filtrar filas vacías que SheetJS a veces incluye
+            const validRows = dataRows.filter(row => row && row.length > 0 && row.some(cell => cell !== null && cell !== ""));
+
+            if (validRows.length <= 1) {
+                showMessage(importMessage, 'El archivo debe contener la cabecera y al menos una fila de datos.', 'text-red-600');
+                return;
+            }
+
+            // Sanitizar cabeceras: convertir a string, trim y lowercase
+            const rawHeaders = validRows[0].map(h => String(h).trim().toLowerCase());
+            
+            const itemIndex = rawHeaders.findIndex(h => h.includes('producto'));
+            const qtyIndex = rawHeaders.findIndex(h => h.includes('unidades'));
+            
+            if (itemIndex === -1 || qtyIndex === -1) {
+                showMessage(importMessage, 'Cabeceras incorrectas. Asegúrate de incluir: Producto y Unidades Entregadas.', 'text-red-600');
+                return;
+            }
+            
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Empezar desde la fila 1 (datos)
+            for (let i = 1; i < validRows.length; i++) {
+                const line = validRows[i];
+
+                const itemName = line[itemIndex] ? String(line[itemIndex]).trim() : null;
+                const quantity = parseInt(line[qtyIndex], 10);
+                
+                const productData = PRODUCT_DATA.find(p => p.name === itemName);
+
+                if (itemName && !isNaN(quantity) && quantity > 0 && productData) {
+                    const salePrice = productData.sale;
+                    const unitCost = productData.cost;
+                    
+                    // Llamar a handleDelivery para cada fila válida
+                    const result = await handleDelivery(itemName, quantity, salePrice, unitCost, importMessage);
+                    if (result !== false) {
+                        successCount++;
+                    } else {
+                        errorCount++;
+                    }
+                } else {
+                    errorCount++;
+                    const reason = !productData ? `(Producto '${itemName}' no encontrado en lista maestra)` : '(Datos inválidos)';
+                    console.warn(`Fila con error: ${line.join(', ')} ${reason}`);
+                }
+            }
+
+            if (successCount > 0) {
+                showMessage(importMessage, `✅ ${successCount} registros de stock inicial importados/actualizados. ${errorCount > 0 ? `(${errorCount} filas con errores/saltadas.)` : ''}`, 'text-green-600');
+                csvFileInput.value = ''; // Limpiar el input si fue exitoso
+            } else if (errorCount > 0) {
+                showMessage(importMessage, `❌ Error: No se pudo importar ningún registro válido. Revisa el formato.`, 'text-red-600');
+            } else {
+                showMessage(importMessage, 'No se encontraron datos válidos para importar.', 'text-red-600');
+            }
+        }
+        
+        // MODIFICADO: Event Listener del botón de importación
+        importCsvBtn.addEventListener('click', () => {
+            const file = csvFileInput.files[0];
+            if (!file) {
+                showMessage(importMessage, 'Por favor, selecciona un archivo CSV, TXT o Excel para subir.', 'text-red-600');
+                return;
+            }
+
+            const fileName = file.name.toLowerCase();
+            const reader = new FileReader();
+
+            try {
+                if (fileName.endsWith('.csv') || fileName.endsWith('.txt')) {
+                    // Lógica para CSV/TXT
+                    reader.onload = (event) => {
+                        try {
+                            const csvText = event.target.result;
+                            const delimiter = detectDelimiter(csvText);
+                            const lines = csvText.trim().split('\n').filter(line => line.trim() !== '');
+                            // Convertir texto a array de arrays
+                            const dataRows = lines.map(line => line.split(delimiter).map(v => v.trim()));
+                            processImportedData(dataRows);
+                        } catch (textError) {
+                            console.error("Error al procesar archivo de texto:", textError);
+                            showMessage(importMessage, 'Error al procesar el archivo CSV/TXT.', 'text-red-600');
+                        }
+                    };
+                    reader.onerror = (error) => {
+                         console.error("Error de lectura de archivo (TXT/CSV):", error);
+                         showMessage(importMessage, 'Error de lectura del archivo de texto.', 'text-red-600');
+                    };
+                    reader.readAsText(file);
+
+                } else if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx')) {
+                    // Lógica para Excel (SheetJS)
+                    // NOTA: La variable 'XLSX' está disponible globalmente gracias al script añadido en el <head>
+                    reader.onload = (event) => {
+                        try {
+                            const arrayBuffer = event.target.result;
+                            const data = new Uint8Array(arrayBuffer);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            
+                            const sheetName = workbook.SheetNames[0];
+                            if (!sheetName) {
+                                showMessage(importMessage, 'Error: El archivo Excel está vacío o no tiene hojas.', 'text-red-600');
+                                return;
+                            }
+                            
+                            const worksheet = workbook.Sheets[sheetName];
+                            // Convertir hoja a array de arrays (header: 1)
+                            const dataRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+                            
+                            if (dataRows.length === 0) {
+                                 showMessage(importMessage, 'Error: La primera hoja del archivo Excel está vacía.', 'text-red-600');
+                                 return;
+                            }
+
+                            processImportedData(dataRows);
+
+                        } catch (excelError) {
+                            console.error("Error al procesar el archivo Excel:", excelError);
+                            showMessage(importMessage, 'Error al procesar el archivo Excel. Asegúrate que no esté corrupto.', 'text-red-600');
+                        }
+                    };
+                     reader.onerror = (error) => {
+                         console.error("Error de lectura de archivo (Excel):", error);
+                         showMessage(importMessage, 'Error de lectura del archivo Excel.', 'text-red-600');
+                    };
+                    reader.readAsArrayBuffer(file); // Leer como ArrayBuffer para Excel
+
+                } else {
+                    showMessage(importMessage, 'Formato de archivo no soportado. Sube .csv, .txt, .xls, o .xlsx', 'text-red-600');
+                }
+            } catch (error) {
+                 console.error("Error al iniciar la lectura del archivo:", error);
+                 showMessage(importMessage, 'Error general al leer el archivo.', 'text-red-600');
+            }
+        });
+
+
+        // --- Renderizado y Listener de Firestore ---
+
+        function renderOpenInventory(openItems) {
+            openInventoryList.innerHTML = '';
+
+            if (openItems.length === 0) {
+                openInventoryList.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-500">
+                    🎉 ¡No hay conteos pendientes!
+                </td></tr>`;
+                return;
+            }
+
+            openItems.forEach(item => {
+                const date = item.dateOpened instanceof Date 
+                    ? item.dateOpened.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : 'N/A';
+                
+                // No mostrar 'Cervezas Devueltas' en la lista de pendientes (ya que se cierran solas)
+                if (item.itemName === "Cervezas Devueltas") return;
+
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-yellow-50 transition duration-150 ease-in-out';
+                row.innerHTML = `
+                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${item.itemName}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500 font-bold">${item.received}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-400">${date}</td>
+                    <td class="px-3 py-3 whitespace-nowrap text-right text-sm font-medium flex space-x-2 justify-end">
+                        <button data-doc-id="${item.id}" class="text-red-600 hover:text-red-900 delete-open-btn text-lg" title="Eliminar Registro Abierto">
+                            🗑️
+                        </button>
+                        <button data-doc-id="${item.id}" 
+                                data-item-name="${item.itemName}"
+                                data-received="${item.received}"
+                                data-unit-profit="${item.unitProfit}" 
+                                class="btn-secondary text-white font-bold py-2 px-3 rounded-lg shadow-md open-close-modal-btn">
+                            Ingresar Cierre
+                        </button>
+                    </td>
+                `;
+                openInventoryList.appendChild(row);
+            });
+            
+            // Re-asignar listeners a los botones recién creados
+            openInventoryList.querySelectorAll('.open-close-modal-btn').forEach(button => {
+                button.addEventListener('click', (e) => openCloseModal(e.currentTarget));
+            });
+            openInventoryList.querySelectorAll('.delete-open-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const docId = e.currentTarget.getAttribute('data-doc-id');
+                    deleteInventory(docId, "OPEN");
+                });
+            });
+        }
+
+        function renderClosedInventory(closedItems) {
+            closedInventoryList.innerHTML = '';
+            closedLoadingMessage.classList.add('hidden');
+            closedInventoryData = closedItems; // Actualizar datos globales para exportación
+
+            if (closedItems.length === 0) {
+                closedInventoryList.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-500">
+                    No hay reportes de inventario cerrado.
+                </td></tr>`;
+            } else {
+                closedItems.forEach(item => {
+                    const usage = item.usage;
+                    const salePrice = item.salePrice || 0;
+                    const unitCost = item.unitCost || 0;
+                    const grossProfit = item.grossProfit || 0;
+                    
+                    let usageClass = 'text-gray-900';
+                    if (item.itemName === "Cervezas Devueltas") {
+                        usageClass = 'text-purple-600 font-bold'; // Morado para devoluciones
+                    } else if (usage > 0) {
+                        usageClass = 'text-green-600 font-bold'; // Verde para consumo positivo
+                    } else if (usage < 0) {
+                        usageClass = 'text-red-600 font-bold'; // Rojo para consumo negativo (error)
+                    }
+
+                    const date = item.dateClosed instanceof Date 
+                        ? item.dateClosed.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+                        : 'N/A';
+
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-red-50 transition duration-150 ease-in-out';
+                    row.innerHTML = `
+                        <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${item.itemName}</td>
+                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${item.received}</td>
+                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${item.remaining}</td>
+                        <td class="px-3 py-3 whitespace-nowrap text-sm ${usageClass}">${usage}</td>
+                        
+                        <!-- Columnas Financieras --><td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${formatCurrency(salePrice)}</td>
+                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${formatCurrency(unitCost)}</td>
+                        <td class="px-3 py-3 whitespace-nowrap text-sm text-blue-600 font-bold">${formatCurrency(grossProfit)}</td>
+                        
+                        <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-400">${date}</td>
+                        <td class="px-3 py-3 whitespace-nowrap text-right text-sm font-medium">
+                            <button data-doc-id="${item.id}" class="text-red-600 hover:text-red-900 delete-closed-btn text-lg" title="Eliminar Registro Cerrado">
+                                🗑️
+                            </button>
+                        </td>
+                    `;
+                    closedInventoryList.appendChild(row);
+                });
+            }
+
+            // Re-asignar listeners a los botones de borrado
+            closedInventoryList.querySelectorAll('.delete-closed-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const docId = e.currentTarget.getAttribute('data-doc-id');
+                    deleteInventory(docId, "CLOSED");
+                });
+            });
+
+            // Recalcular balance de caja CADA VEZ que se actualice el historial cerrado
+            calculateAndDisplayCashBalance();
+            // ELIMINADO: Ocultar el enlace de descarga
+            // downloadLinkContainer.classList.add('hidden');
+            // generatedUrlText.value = '';
+        }
+
+        function setupInventoryListener() {
+            if (!isAuthReady) {
+                console.warn("setupInventoryListener called but auth is not ready.");
+                return;
+            }
+            
+            const q = query(collection(db, INVENTORY_COLLECTION_PATH));
+            
+            // Usar fetchWithRetry para el listener onSnapshot
+            fetchWithRetry(() => new Promise((resolve, reject) => {
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const openItems = [];
+                    const closedItems = [];
+                    
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+                        // Conversión segura de Timestamps
+                        const dateOpened = data.dateOpened && data.dateOpened.toDate ? data.dateOpened.toDate() : null;
+                        const dateClosed = data.dateClosed && data.dateClosed.toDate ? data.dateClosed.toDate() : null;
+
+                        const item = { 
+                            id: doc.id, 
+                            ...data,
+                            dateOpened: dateOpened,
+                            dateClosed: dateClosed
+                        };
+                        
+                        if (data.status === 'OPEN') {
+                            openItems.push(item);
+                        } else if (data.status === 'CLOSED') {
+                            closedItems.push(item);
+                        }
+                    });
+                    
+                    // Ordenar: cerrados más recientes primero, abiertos más recientes primero
+                    closedItems.sort((a, b) => (b.dateClosed?.getTime() || 0) - (a.dateClosed?.getTime() || 0));
+                    openItems.sort((a, b) => (b.dateOpened?.getTime() || 0) - (a.dateOpened?.getTime() || 0));
+
+                    // Actualizar datos globales
+                    openInventoryData = openItems;
+                    
+                    // Renderizar ambas listas
+                    renderOpenInventory(openItems);
+                    renderClosedInventory(closedItems);
+                    resolve(unsubscribe); // Resolvemos con la función de unsubscribe
+                }, (error) => {
+                    console.error("Error en onSnapshot: ", error);
+                    closedLoadingMessage.textContent = '❌ Error al cargar los datos. Revisa las reglas de seguridad.';
+                    reject(error); // Rechazamos en caso de error
+                });
+            })).catch(error => {
+                 console.error("Fallo definitivo del listener de onSnapshot:", error);
+                 closedLoadingMessage.textContent = '❌ Error de conexión irrecuperable con la base de datos.';
+            });
+        }
+        
+        async function deleteInventory(docId, status) {
+             if (!isAuthReady || !userId) {
+                console.error("Auth no está listo o userId no disponible.");
+                return;
+            }
+
+            const message = status === "OPEN" 
+                ? '¿Estás seguro de que quieres eliminar este registro ABIERTO? (Se elimina completamente la entrada inicial).'
+                : '¿Estás seguro de que quieres eliminar este registro CERRADO? Esto **reabrirá** el stock con las unidades iniciales en la lista de pendientes.';
+            
+            // Custom modal
+            const confirmElement = document.createElement('div');
+            confirmElement.className = 'modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] open';
+            confirmElement.innerHTML = `
+                <div class="modal-content bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                    <p class="mb-4 font-bold text-gray-700">${message}</p>
+                    <div class="flex justify-end space-x-3">
+                        <button id="confirm-cancel" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancelar</button>
+                        <button id="confirm-delete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Aceptar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmElement);
+
+            return new Promise((resolve) => {
+                document.getElementById('confirm-cancel').onclick = () => {
+                    document.body.removeChild(confirmElement);
+                    resolve(false);
+                };
+                document.getElementById('confirm-delete').onclick = async () => {
+                    document.body.removeChild(confirmElement);
+                    
+                    try {
+                        if (status === "OPEN") {
+                            // Simplemente eliminar el documento abierto
+                            await fetchWithRetry(() => deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, docId)));
+                            showMessage(deliveryFormMessage, `Registro ABIERTO eliminado.`, 'text-orange-600');
+
+                        } else if (status === "CLOSED") {
+                            // 1. Obtener el documento cerrado
+                            const docRef = doc(db, INVENTORY_COLLECTION_PATH, docId);
+                            const docSnap = await fetchWithRetry(() => getDoc(docRef));
+
+                            if (docSnap.exists()) {
+                                const data = docSnap.data();
+                                
+                                // 2. Crear un nuevo documento ABIERTO con los datos originales
+                                await fetchWithRetry(() => addDoc(collection(db, INVENTORY_COLLECTION_PATH), {
+                                    itemName: data.itemName,
+                                    received: data.received,
+                                    salePrice: data.salePrice, 
+                                    unitCost: data.unitCost,   
+                                    unitProfit: data.unitProfit,
+                                    remaining: 0, 
+                                    status: 'OPEN',
+                                    openedBy: userId, // Reabierto por el usuario actual
+                                    dateOpened: new Date(),
+                                    dateClosed: null,
+                                    usage: 0,
+                                    grossProfit: 0 
+                                }));
+                                
+                                // 3. Eliminar el documento CERRADO
+                                await fetchWithRetry(() => deleteDoc(docRef));
+                                
+                                showMessage(deliveryFormMessage, 
+                                    `✅ Cierre revertido. ${data.received} unidades de ${data.itemName} reingresadas a stock abierto.`, 
+                                    'text-green-600'
+                                );
+                            } else {
+                                showMessage(deliveryFormMessage, `Error: Documento cerrado no encontrado.`, 'text-red-600');
+                            }
+                        }
+                        resolve(true);
+                    } catch (e) {
+                        console.error("Error al gestionar eliminación/recuperación: ", e);
+                        showMessage(deliveryFormMessage, `❌ Error al modificar el documento. Revisa la consola.`, 'text-red-600');
+                        resolve(false);
+                    }
+                };
+            });
+        }
+
+
+        // --- Lógica de Exportación a CSV/Excel ---
+        
+        function generateCSVContent() {
+            // Se genera el reporte basado en los datos de PRODUCT_DATA y los datos cerrados/abiertos
+            
+            if (PRODUCT_DATA.length === 0) {
+                 return null; // No hay productos base
+            }
+
+            // Usar Tabulador (\t) como delimitador para mejor compatibilidad con Excel
+            const DELIMITER = '\t';
+            
+            let totalProfitInventory = 0;
+            let totalSaleInventory = 0;
+            let totalCostInventory = 0;
+            
+            // 1. Agrupar datos cerrados por nombre de producto
+            const closedMap = new Map();
+            closedInventoryData.forEach(item => {
+                const itemName = item.itemName;
+                const usage = item.usage || 0;
+                const received = item.received || 0;
+                const salePrice = item.salePrice || 0;
+                const unitCost = item.unitCost || 0;
+                
+                const itemGrossProfit = item.grossProfit || 0; 
+                totalProfitInventory += itemGrossProfit;
+                totalSaleInventory += usage * salePrice;
+                totalCostInventory += usage * unitCost;
+
+                const existing = closedMap.get(itemName) || { 
+                    itemName, 
+                    totalReceived: 0, 
+                    totalUsage: 0,
+                    totalRemaining: 0, // Sumar lo que quedó en los cierres
+                    salePrice: salePrice, // Usar el último precio/costo registrado
+                    unitCost: unitCost,   
+                };
+                
+                existing.totalReceived += received;
+                existing.totalUsage += usage;
+                existing.totalRemaining += item.remaining || 0;
+                
+                closedMap.set(itemName, existing);
+            });
+
+            // 2. Agrupar datos abiertos (pendientes)
+            const openMap = new Map();
+            openInventoryData.forEach(item => {
+                const itemName = item.itemName;
+                const received = item.received || 0;
+                
+                const existing = openMap.get(itemName) || { totalPending: 0 };
+                existing.totalPending += received;
+                openMap.set(itemName, existing);
+            });
+            
+            // 3. Crear el reporte final usando PRODUCT_DATA como base
+            const allProductsForExport = [];
+            
+            PRODUCT_DATA.forEach(product => {
+                const aggregatedData = closedMap.get(product.name);
+                const openData = openMap.get(product.name);
+                
+                // Caso especial: Solo mostrar devueltas si realmente hubo (Esta lógica se mantiene)
+                if (product.name === "Cervezas Devueltas" && !closedMap.has("Cervezas Devueltas")) {
+                    return;
+                }
+                
+                const received = aggregatedData ? aggregatedData.totalReceived : 0;
+                const consumed = aggregatedData ? aggregatedData.totalUsage : 0;
+                const sale = aggregatedData ? aggregatedData.salePrice : product.sale; // Prioriza precio del cierre
+                const cost = aggregatedData ? aggregatedData.unitCost : product.cost; // Prioriza costo del cierre
+                
+                // Stock (Balance) = Lo que sobró en cierres + Lo que está pendiente de cierre
+                const remainingFromClosed = aggregatedData ? aggregatedData.totalRemaining : 0;
+                const pendingInOpen = openData ? openData.totalPending : 0;
+                const stockBalance = remainingFromClosed + pendingInOpen;
+
+                const grossSale = consumed * sale;
+                const grossCost = consumed * cost;
+                const grossProfit = grossSale - grossCost; // Recalcular ganancia por si acaso
+
+                allProductsForExport.push({
+                    Producto: product.name,
+                    Total_Recibidas_Entradas: received,
+                    Total_Consumidas_Salidas: consumed,
+                    Stock_Balance_Total: stockBalance, 
+                    Precio_Venta_Unitario: sale,
+                    Costo_Unitario: cost,
+                    Venta_Bruta_Total: grossSale,
+                    Costo_Bruto_Total: grossCost,
+                    Ganancia_Bruta_Total: grossProfit, 
+                });
+            });
+
+            // Encabezados del Reporte de Inventario
+            const reportHeaders = [
+                "Producto", "Total Recibidas (Entradas)", "Total Consumidas (Salidas/Usadas)", "Stock (Balance Total)",
+                "Precio Venta Unitario", "Costo Unitario", "Venta Bruta Total", "Costo Bruto Total", "Ganancia Bruta (Total)"
+            ];
+            
+            const productRows = allProductsForExport.map(item => {
+                return [
+                    item.Producto, item.Total_Recibidas_Entradas, item.Total_Consumidas_Salidas, item.Stock_Balance_Total, 
+                    item.Precio_Venta_Unitario, item.Costo_Unitario, item.Venta_Bruta_Total, item.Costo_Bruto_Total, item.Ganancia_Bruta_Total,
+                ].join(DELIMITER);
+            });
+
+            // Bloque de Totales del Inventario
+            const totalInventoryRows = [
+                ["", "", "", "", "", "", "", ""].join(DELIMITER), // Espaciador
+                ["", "", "", "", "", "", "TOTAL VENTA BRUTA (Consumo):", totalSaleInventory].join(DELIMITER),
+                ["", "", "", "", "", "", "TOTAL COSTO BRUTO (Consumo):", totalCostInventory].join(DELIMITER),
+                ["", "", "", "", "", "", "TOTAL GANANCIA BRUTA (Consumo):", totalProfitInventory].join(DELIMITER),
+                ["", "", "", "", "", "", "", ""].join(DELIMITER), // Espaciador
+            ];
+            
+            // 4. Bloque de Cierre de Caja
+            const efectivo = (parseInt(efectivoInput.value) || 0);
+            const nequi = (parseInt(nequiInput.value) || 0);
+            const daviplata = (parseInt(daviplataInput.value) || 0);
+            const deudas = (parseInt(deudasInput.value) || 0);
+
+            const totalRindes = efectivo + nequi + daviplata + deudas;
+            const balanceFinal = totalRindes - totalSaleInventory; // (Total Rindes - Venta Bruta)
+
+            const cashBalanceBlock = [
+                ["", "RESUMEN DE CIERRE DE CAJA Y BALANCE", "", "", "", "", "", ""].join(DELIMITER),
+                ["EFECTIVO (Rindes)", efectivo, "", "", "", "", "", ""].join(DELIMITER),
+                ["NEQUI (Rindes)", nequi, "", "", "", "", "", ""].join(DELIMITER),
+                ["DAVIPLATA (Rindes)", daviplata, "", "", "", "", "", ""].join(DELIMITER),
+                ["DEUDAS (Crédito)", deudas, "", "", "", "", "", ""].join(DELIMITER),
+                ["", "", "", "", "", "", "TOTAL RINDES (Efectivo+Digital+Deudas):", totalRindes].join(DELIMITER),
+                ["", "", "", "", "", "", "VENTA BRUTA ESPERADA (Consumo):", totalSaleInventory].join(DELIMITER),
+                ["", "", "", "", "", "", "BALANCE FINAL:", balanceFinal].join(DELIMITER),
+            ];
+
+            // Combinar todo
+            const csvContent = [
+                reportHeaders.join(DELIMITER), ...productRows, ...totalInventoryRows, ...cashBalanceBlock
+            ].join('\n');
+            
+            return csvContent;
+        }
+
+        // MODIFICADO: Función para descarga directa
+        function downloadCSVFile(csvContent, fileName) {
+            const encodedCsv = encodeURIComponent(csvContent);
+            const dataUrl = `data:text/csv;charset=utf-8,${encodedCsv}`;
+
+            const link = document.createElement('a');
+            link.setAttribute('href', dataUrl);
+            link.setAttribute('download', fileName);
+            document.body.appendChild(link); // Requerido para Firefox
+            
+            link.click();
+            
+            document.body.removeChild(link);
+        }
+
+        // CORRECCIÓN: Se reemplaza la llamada a la función fantasma por la lógica inline.
+        exportButton.addEventListener('click', () => {
+            const csvContent = generateCSVContent();
+            
+            if (!csvContent) {
+                showMessage(deliveryFormMessage, 'No hay datos válidos para generar el reporte.', 'text-orange-600');
+                return;
+            }
+
+            const date = new Date();
+            const dateString = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
+            const fileName = `Reporte_Inventario_SSB_${dateString}.xls`; // .xls para que Excel lo abra
+
+            downloadCSVFile(csvContent, fileName);
+            
+            showMessage(deliveryFormMessage, '✅ Reporte descargado exitosamente.', 'text-green-600');
+        });
+
+        resetOpenStockBtn.addEventListener('click', resetOpenInventory);
+        
+        // CORRECCIÓN: Cambiado de resetClosedHistory a resetClosedInventory
+        resetClosedHistoryBtn.addEventListener('click', resetClosedInventory);
+
+        // ELIMINADO: Botón de Copiar URL
+        
+
+        // --- Lógica del Modal (Cierre de Inventario) ---
+        
+        function openCloseModal(button) {
+            const docId = button.getAttribute('data-doc-id');
+            const itemName = button.getAttribute('data-item-name');
+            const receivedCount = button.getAttribute('data-received');
+            const unitProfit = button.getAttribute('data-unit-profit'); 
+
+            // Llenar datos del modal
+            modalDocId.value = docId;
+            modalItemName.textContent = itemName;
+            modalReceivedCount.textContent = receivedCount;
+            // Guardar datos en el formulario para el submit
+            closeForm.setAttribute('data-unit-profit', unitProfit);
+            closeForm.setAttribute('data-received-count', receivedCount);
+
+
+            unitsRemainingInput.value = ''; // Limpiar input
+            closeModalMessage.classList.add('hidden'); // Ocultar mensajes anteriores
+            
+            // Mostrar modal
+            closeModal.classList.remove('opacity-0', 'pointer-events-none');
+            closeModal.classList.add('open');
+            unitsRemainingInput.focus(); // Enfocar en el input
+        }
+
+        function closeTheModal() {
+            closeModal.classList.remove('open');
+            closeModal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        closeCancelBtn.addEventListener('click', closeTheModal);
+
+        // --- Manejo de Formularios ---
+
+        // 1. Formulario de Entrega (Rol 1)
+        deliveryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const itemName = deliveryItemSelect.value.trim(); 
+            const quantity = parseInt(document.getElementById('quantity-delivered').value, 10);
+            const salePrice = parseInt(salePriceInput.value, 10);
+            const unitCost = parseInt(unitCostInput.value, 10);
+            
+            if (!itemName || itemName === "" || isNaN(quantity) || quantity <= 0 || isNaN(salePrice) || isNaN(unitCost)) {
+                showMessage(deliveryFormMessage, 'Por favor, selecciona un producto y completa todos los campos con valores válidos.', 'text-red-600');
+                return;
+            }
+
+            const result = await handleDelivery(itemName, quantity, salePrice, unitCost, deliveryFormMessage);
+            if (result !== false) {
+                showMessage(deliveryFormMessage, `✅ ${result}`, 'text-green-600');
+                deliveryForm.reset();
+                deliveryItemSelect.value = ""; // Resetear select
+                salePriceInput.value = '';
+                unitCostInput.value = '';
+            }
+        });
+
+        // 2. Formulario de Cierre (Modal, Rol 2)
+        closeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const docId = modalDocId.value;
+            const remaining = parseInt(unitsRemainingInput.value, 10);
+            const received = parseInt(closeForm.getAttribute('data-received-count'), 10);
+            const unitProfit = parseInt(closeForm.getAttribute('data-unit-profit'), 10);
+            
+            if (isNaN(remaining) || remaining < 0) {
+                showMessage(closeModalMessage, 'Ingresa una cantidad restante válida (un número positivo o cero).', 'text-red-600');
+                return;
+            }
+            
+            // Alerta si el conteo restante es MAYOR que el recibido
+            if (remaining > received) {
+                const confirmElement = document.createElement('div');
+                confirmElement.className = 'modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] open';
+                confirmElement.innerHTML = `
+                    <div class="modal-content bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <p class="mb-4 font-bold text-orange-700">¡Alerta de Conteo!</p>
+                        <p class="mb-4 text-gray-700">Las restantes (${remaining}) son mayores que las recibidas (${received}). ¿Es un error de conteo? Presiona **Aceptar** para continuar y cerrar, o **Cancelar** para corregir el valor.</p>
+                        <div class="flex justify-end space-x-3">
+                            <button id="confirm-cancel-close-alert" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancelar</button>
+                            <button id="confirm-continue-close-alert" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">Aceptar y Continuar</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(confirmElement);
+
+                document.getElementById('confirm-cancel-close-alert').onclick = () => {
+                    document.body.removeChild(confirmElement);
+                };
+                
+                document.getElementById('confirm-continue-close-alert').onclick = async () => {
+                    document.body.removeChild(confirmElement);
+                    const success = await handleCloseInventory(docId, remaining, unitProfit, received);
+                    if (success) {
+                        closeTheModal();
+                    }
+                };
+                return; // Detener el submit hasta que se confirme la alerta
+            }
+            
+            // Si el conteo es normal (<= recibido)
+            const success = await handleCloseInventory(docId, remaining, unitProfit, received);
+            if (success) {
+                closeTheModal();
+            }
+        });
+
+        // 3. Formulario de Devoluciones (Rol 2)
+        returnForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const returnsCount = parseInt(returnsCountInput.value, 10);
+
+            if (isNaN(returnsCount) || returnsCount <= 0) {
+                showMessage(returnFormMessage, 'Ingresa una cantidad válida de devoluciones (> 0).', 'text-red-600');
+                return;
+            }
+            
+            handleQuickReturnRegistration(returnsCount);
+            
+            returnsCountInput.value = ''; // Limpiar input
+        });
+
+    </script>
+</body>
+</html>
+
