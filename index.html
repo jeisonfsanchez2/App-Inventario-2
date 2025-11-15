@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sánchez Sport Bar control de inventarios v1</title>
-    <!-- Carga de Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
-    <!-- Carga de SheetJS (xlsx) para leer archivos Excel --><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga de SheetJS (xlsx) para leer archivos Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -82,27 +84,14 @@
             flex-direction: column;
             margin-bottom: 1rem;
         }
-        /* MODIFICADO: Estilo para las iniciales SSB */
-        .initials-logo {
-            font-size: 3rem; /* Tamaño grande para las iniciales */
-            font-weight: 900; /* Extra bold */
-            border: 4px solid #dc2626; /* Borde rojo */
-            border-radius: 50%; /* Circular */
-            width: 120px;
+        .logo {
+            width: 120px; /* Tamaño fijo para el logo */
             height: 120px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #ffffff; /* Fondo blanco */
+            border-radius: 50%; /* Si quieres que sea circular, aunque la imagen ya lo es */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            /* MODIFICADO: Añadido borde rojo (línea de contorno) */
+            border: 4px solid #dc2626; 
         }
-        .initials-logo .s, .initials-logo .b {
-            color: #dc2626; /* Rojo */
-        }
-        .initials-logo .p {
-            color: #2563eb; /* Azul */
-        }
-
         /* Estilo específico para la tabla de cierre de caja */
         .cash-balance-table th, .cash-balance-table td {
             padding: 0.75rem;
@@ -127,9 +116,11 @@
     <div id="app" class="min-h-screen p-2 sm:p-4 md:p-8">
         <header class="text-center mb-8">
             <div class="logo-container">
-                <!-- MODIFICADO: Logo con iniciales SSB --><div class="initials-logo">
-                    <span class="s">S</span><span class="p">P</span><span class="b">B</span>
-                </div>
+                <!-- MODIFICADO: Logo fondo blanco, texto azul, borde rojo (vía CSS) -->
+                <img src="https://placehold.co/120x120/ffffff/2563eb?text=SPB" 
+                     alt="Logo Sánchez Sport Bar" 
+                     class="logo"
+                     onerror="this.onerror=null;this.src='https://placehold.co/120x120/ffffff/2563eb?text=SPB';">
                 <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mt-3">Sánchez Sport Bar control de inventarios v1</h1>
             </div>
             <p class="text-gray-600 text-sm sm:text-base">Proceso de dos usuarios: **Entrega (Stock Inicial + Valores)** y **Cierre (Conteo Final)**.</p>
@@ -138,20 +129,26 @@
             </div>
         </header>
 
-        <!-- Tarjeta 1: REGISTRO DE ENTREGA (ROL: Quien entrega/añade stock + Valores) --><div class="inventory-card max-w-4xl mx-auto p-4 md:p-8 rounded-xl mb-10">
+        <!-- Tarjeta 1: REGISTRO DE ENTREGA (ROL: Quien entrega/añade stock + Valores) -->
+        <div class="inventory-card max-w-4xl mx-auto p-4 md:p-8 rounded-xl mb-10">
             <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">1. Registrar Stock Inicial / Adición (Entrega)</h2>
 
-            <!-- SECCIÓN: IMPORTAR CSV/EXCEL --><div class="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
+            <!-- SECCIÓN: IMPORTAR CSV/EXCEL -->
+            <div class="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
                 <h3 class="text-lg font-semibold mb-3 text-blue-600">Opción B: Importar Stock Inicial (CSV/Excel)</h3>
-                <!-- MODIFICADO --><p class="text-sm text-gray-700 mb-3">Sube un archivo de texto/CSV o Excel (.xls, .xlsx) con la lista de productos y la cantidad recibida. Los precios y costos se tomarán automáticamente de la lista maestra.</p>
+                <!-- MODIFICADO -->
+                <p class="text-sm text-gray-700 mb-3">Sube un archivo de texto/CSV o Excel (.xls, .xlsx) con la lista de productos y la cantidad recibida. Los precios y costos se tomarán automáticamente de la lista maestra.</p>
                 <code class="block bg-gray-100 p-2 rounded-lg text-xs mb-3 text-gray-800 font-mono">Formato: Columna A: Producto, Columna B: Unidades Entregadas</code>
-                <!-- MODIFICADO: accept --><input type="file" id="csv-file-input" accept=".csv, .txt, .xls, .xlsx" class="mb-3 w-full p-2 border border-blue-300 rounded-lg text-sm">
+                <!-- MODIFICADO: accept -->
+                <input type="file" id="csv-file-input" accept=".csv, .txt, .xls, .xlsx" class="mb-3 w-full p-2 border border-blue-300 rounded-lg text-sm">
                 <button id="import-csv-btn" class="btn-secondary w-full text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
                     ⬆️ Subir y Abrir Conteo Masivo
                 </button>
                 <div id="import-message" class="w-full text-center text-sm mt-2 hidden"></div>
             </div>
-            <!-- FIN DE SECCIÓN IMPORTAR --><h3 class="text-lg font-semibold mb-3 text-gray-800">Opción A: Registro Manual (Recomendado para pocas unidades)</h3>
+            <!-- FIN DE SECCIÓN IMPORTAR -->
+            
+            <h3 class="text-lg font-semibold mb-3 text-gray-800">Opción A: Registro Manual (Recomendado para pocas unidades)</h3>
             <form id="delivery-form" class="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div class="col-span-2 md:col-span-1">
                     <label for="delivery-item-name" class="block text-sm font-medium text-gray-700 mb-1">Producto Entregado</label>
@@ -163,7 +160,8 @@
                     <label for="quantity-delivered" class="block text-sm font-medium text-gray-700 mb-1">Unidades Entregadas</label>
                     <input type="number" id="quantity-delivered" required min="1" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500" placeholder="Ej: 30">
                 </div>
-                <!-- CAMPOS FINANCIEROS (Se llenan automáticamente) --><div class="col-span-1 md:col-span-1">
+                <!-- CAMPOS FINANCIEROS (Se llenan automáticamente) -->
+                <div class="col-span-1 md:col-span-1">
                     <label for="sale-price" class="block text-sm font-medium text-gray-700 mb-1">Precio Venta (Unidad)</label>
                     <input type="number" id="sale-price" required min="0" step="100" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-gray-50" placeholder="0" readonly>
                 </div>
@@ -171,7 +169,8 @@
                     <label for="unit-cost" class="block text-sm font-medium text-gray-700 mb-1">Costo Unitario (Unidad)</label>
                     <input type="number" id="unit-cost" required min="0" step="100" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-gray-50" placeholder="0" readonly>
                 </div>
-                <div class="col-span-2 md:col-span-1 pt-0 md:pt-8"> <!-- Ajuste de padding para alineación --><button type="submit" class="btn-primary w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
+                <div class="col-span-2 md:col-span-1 pt-0 md:pt-8"> <!-- Ajuste de padding para alineación -->
+                    <button type="submit" class="btn-primary w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
                         Abrir/Añadir Stock
                     </button>
                 </div>
@@ -179,10 +178,12 @@
             </form>
         </div>
 
-        <!-- Tarjeta 2: INVENTARIO PENDIENTE DE CIERRE (ROL: Quien recibe/cierra) --><div class="inventory-card max-w-6xl mx-auto p-4 md:p-8 rounded-xl mb-10">
+        <!-- Tarjeta 2: INVENTARIO PENDIENTE DE CIERRE (ROL: Quien recibe/cierra) -->
+        <div class="inventory-card max-w-6xl mx-auto p-4 md:p-8 rounded-xl mb-10">
             <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">2. Inventario Abierto Pendiente de Cierre</h2>
             
-            <!-- SECCIÓN: REGISTRO RÁPIDO DE DEVOLUCIONES --><h3 class="text-lg font-semibold mb-3 text-red-600">Registro Rápido de Devoluciones (Solo Rol 2)</h3>
+            <!-- SECCIÓN: REGISTRO RÁPIDO DE DEVOLUCIONES -->
+            <h3 class="text-lg font-semibold mb-3 text-red-600">Registro Rápido de Devoluciones (Solo Rol 2)</h3>
             <form id="return-form" class="flex flex-col sm:flex-row gap-4 mb-6 p-4 border border-orange-200 rounded-lg bg-orange-50">
                 <div class="flex-grow">
                     <label for="returns-count" class="block text-sm font-medium text-gray-700 mb-1">Cantidad de Cervezas Devueltas</label>
@@ -195,7 +196,9 @@
                 </div>
                 <div id="return-form-message" class="w-full text-center text-sm mt-2 hidden"></div>
             </form>
-            <!-- FIN DE SECCIÓN DEVOLUCIONES --><h3 class="text-lg font-semibold mb-3 text-gray-800">Cierres Pendientes de Stock (Bebidas/Comida)</h3>
+            <!-- FIN DE SECCIÓN DEVOLUCIONES -->
+
+            <h3 class="text-lg font-semibold mb-3 text-gray-800">Cierres Pendientes de Stock (Bebidas/Comida)</h3>
             <div id="open-inventory-list-container" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-100">
@@ -213,23 +216,29 @@
             </div>
         </div>
 
-        <!-- Tarjeta 3: HISTORIAL CERRADO --><div class="inventory-card max-w-full mx-auto p-4 md:p-8 rounded-xl mb-10">
+        <!-- Tarjeta 3: HISTORIAL CERRADO -->
+        <div class="inventory-card max-w-full mx-auto p-4 md:p-8 rounded-xl mb-10">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-2">
                 <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">3. Historial de Inventario Cerrado (Consumo y Ganancia)</h2>
                 <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-2 sm:mt-0">
-                    <!-- Botón de reinicio de stock abierto --><button id="reset-open-stock-btn" class="btn-reset text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
+                    <!-- Botón de reinicio de stock abierto -->
+                    <button id="reset-open-stock-btn" class="btn-reset text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
                         🔄 Reiniciar Stock Abierto
                     </button>
-                    <!-- NUEVO: Botón de reinicio de historial cerrado --><button id="reset-closed-history-btn" class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
+                    <!-- NUEVO: Botón de reinicio de historial cerrado -->
+                    <button id="reset-closed-history-btn" class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
                         🗑️ Reiniciar Historial Cerrado
                     </button>
-                    <!-- MODIFICADO: Texto del botón de descarga directa --><button id="export-btn" class="btn-export text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
+                    <!-- MODIFICADO: Texto del botón de descarga directa -->
+                    <button id="export-btn" class="btn-export text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
                         ⬇️ Descargar Reporte (Excel)
                     </button>
                 </div>
             </div>
             
-            <!-- ELIMINADO: Contenedor del enlace de descarga --><div id="closed-inventory-list-container" class="overflow-x-auto">
+            <!-- ELIMINADO: Contenedor del enlace de descarga -->
+
+            <div id="closed-inventory-list-container" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 table-sticky-header">
                     <thead class="bg-gray-100">
                         <tr>
@@ -237,7 +246,8 @@
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recibidas (Entrada)</th>
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restantes (Salida)</th>
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo (Usadas)</th>
-                            <!-- COLUMNAS FINANCIERAS --><th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venta Unit.</th>
+                            <!-- COLUMNAS FINANCIERAS -->
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venta Unit.</th>
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Unit.</th>
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ganancia Bruta</th>
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Cierre</th>
@@ -245,52 +255,62 @@
                         </tr>
                     </thead>
                     <tbody id="closed-inventory-list" class="bg-white divide-y divide-gray-200">
-                        <!-- Los datos cerrados se insertarán aquí por JavaScript --></tbody>
+                        <!-- Los datos cerrados se insertarán aquí por JavaScript -->
+                    </tbody>
                 </table>
                 <div id="closed-loading-message" class="text-center py-8 text-gray-500">Cargando historial...</div>
             </div>
         </div>
 
-        <!-- Tarjeta 4: CIERRE DE CAJA / BALANCE FINANCIERO --><div class="inventory-card max-w-xs mx-auto p-4 md:p-6 rounded-xl">
+        <!-- Tarjeta 4: CIERRE DE CAJA / BALANCE FINANCIERO -->
+        <div class="inventory-card max-w-xs mx-auto p-4 md:p-6 rounded-xl">
             <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">4. Cierre de Caja / Balance Financiero</h2>
             <div class="flex flex-col space-y-3">
                 
-                <!-- EFECTIVO --><div class="flex justify-between items-center">
+                <!-- EFECTIVO -->
+                <div class="flex justify-between items-center">
                     <label for="cash-efectivo" class="text-sm font-medium text-gray-700">Efectivo:</label>
                     <input type="number" id="cash-efectivo" min="0" value="0" step="1000" class="input-cash w-32 calculate-cash-input">
                 </div>
                 
-                <!-- NEQUI --><div class="flex justify-between items-center">
+                <!-- NEQUI -->
+                <div class="flex justify-between items-center">
                     <label for="cash-nequi" class="text-sm font-medium text-gray-700">Nequi:</label>
                     <input type="number" id="cash-nequi" min="0" value="0" step="1000" class="input-cash w-32 calculate-cash-input">
                 </div>
                 
-                <!-- DAVIPLATA --><div class="flex justify-between items-center">
+                <!-- DAVIPLATA -->
+                <div class="flex justify-between items-center">
                     <label for="cash-daviplata" class="text-sm font-medium text-gray-700">Daviplata:</label>
                     <input type="number" id="cash-daviplata" min="0" value="0" step="1000" class="input-cash w-32 calculate-cash-input">
                 </div>
 
-                <!-- DEUDAS --><div class="flex justify-between items-center border-t pt-3">
+                <!-- DEUDAS -->
+                <div class="flex justify-between items-center border-t pt-3">
                     <label for="cash-deudas" class="text-sm font-medium text-red-600">Deudas (Crédito):</label>
                     <input type="number" id="cash-deudas" min="0" value="0" step="1000" class="input-cash w-32 calculate-cash-input">
                 </div>
                 
-                <!-- VENTA BRUTA (NUEVO) --><div class="flex justify-between items-center">
+                <!-- VENTA BRUTA (NUEVO) -->
+                 <div class="flex justify-between items-center">
                     <span class="text-base font-bold text-gray-800">VENTA BRUTA ESPERADA (Consumo):</span>
                     <span id="gross-sales-expected" class="fixed-output text-base text-purple-700 w-32">0</span>
                 </div>
 
-                <!-- GANANCIA BRUTA (CONTROL) --><div class="flex justify-between items-center">
+                <!-- GANANCIA BRUTA (CONTROL) -->
+                <div class="flex justify-between items-center">
                     <span class="text-base font-bold text-gray-800">GANANCIA BRUTA (Control):</span>
                     <span id="sales-expected" class="fixed-output text-base text-blue-700 w-32">0</span>
                 </div>
 
-                <!-- TOTAL RINDES --><div class="flex justify-between items-center border-t border-gray-400 pt-3">
+                <!-- TOTAL RINDES -->
+                <div class="flex justify-between items-center border-t border-gray-400 pt-3">
                     <span class="text-base font-bold text-gray-800">TOTAL RINDES (Efectivo+Digital+Deudas):</span>
                     <span id="cash-total" class="fixed-output text-base text-green-700 w-32">0</span>
                 </div>
                
-                <!-- BALANCE (TOTAL RINDES vs VENTA BRUTA) --><div class="flex justify-between items-center border-t border-gray-400 pt-3">
+                <!-- BALANCE (TOTAL RINDES vs VENTA BRUTA) -->
+                <div class="flex justify-between items-center border-t border-gray-400 pt-3">
                     <span class="text-xl font-extrabold text-gray-900">BALANCE:</span>
                     <span id="cash-balance" class="fixed-output text-xl text-red-700 w-32">0</span>
                 </div>
@@ -302,7 +322,8 @@
 
     </div>
     
-    <!-- Modal para Cierre de Conteo --><div id="close-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
+    <!-- Modal para Cierre de Conteo -->
+    <div id="close-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
         <div class="modal-content bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
             <h3 class="text-xl font-bold mb-4">Cerrar Inventario: <span id="modal-item-name" class="text-red-600"></span></h3>
             <p class="mb-4 text-gray-600 text-sm">Unidades Iniciales/Recibidas: <span id="modal-received-count" class="font-bold"></span></p>
@@ -324,7 +345,8 @@
     </div>
 
 
-    <!-- Firebase SDKs y Script de la Aplicación --><script type="module">
+    <!-- Firebase SDKs y Script de la Aplicación -->
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { 
             getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged
@@ -337,7 +359,8 @@
         // Configuración de Firestore para depuración
         setLogLevel('Debug');
 
-        // Estructura: { name, sale, cost }
+        // Estructura: { name, salePrice, unitCost }
+        // MODIFICADO: Ajuste de costos
         const PRODUCT_DATA = [
             { name: "Whiskey Botella", sale: 70000, cost: 50000 },
             { name: "Whiskey 1/2", sale: 40000, cost: 25000 },
@@ -357,7 +380,7 @@
             { name: "Cuates", sale: 6000, cost: 4500 },
             { name: "Corona", sale: 6000, cost: 3700 },
             { name: "Coronita", sale: 4000, cost: 2800 },
-            { name: "Budwaiser", sale: 3200, cost: 2200 },
+            { name: "Budwaiser", sale: 3300, cost: 2300 }, // <-- AJUSTADO COSTO
             { name: "Pony Malta", sale: 3200, cost: 2200 },
             { name: "Hit", sale: 3200, cost: 2200 },
             { name: "Sporade", sale: 3200, cost: 2200 },
@@ -365,13 +388,11 @@
             { name: "Cocacola", sale: 3200, cost: 2200 },
             { name: "Club", sale: 4000, cost: 3000 },
             { name: "Reds", sale: 4500, cost: 3000 },
-            { name: "Costeña Negra", sale: 3200, cost: 1700 },
-            // Costeña Verde
-            { name: "Costeña Verde", sale: 3200, cost: 1500 }, 
-            // Light (simplificado)
+            { name: "Costeña Negra", sale: 3000, cost: 1700 },
+            { name: "Costeña Verde", sale: 3000, cost: 1500 },
             { name: "Light", sale: 3500, cost: 2500 }, 
-            { name: "Aguila", sale: 3200, cost: 2200 },
-            { name: "Poker", sale: 3200, cost: 2200 },
+            { name: "Aguila", sale: 3300, cost: 2300 }, // <-- AJUSTADO COSTO
+            { name: "Poker", sale: 3300, cost: 2300 }, // <-- AJUSTADO COSTO
             { name: "Doritos", sale: 3200, cost: 1600 },
             { name: "Papas", sale: 3200, cost: 2000 },
             { name: "Detodtito", sale: 3500, cost: 2400 },
@@ -1122,7 +1143,8 @@
                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${item.remaining}</td>
                         <td class="px-3 py-3 whitespace-nowrap text-sm ${usageClass}">${usage}</td>
                         
-                        <!-- Columnas Financieras --><td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${formatCurrency(salePrice)}</td>
+                        <!-- Columnas Financieras -->
+                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${formatCurrency(salePrice)}</td>
                         <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${formatCurrency(unitCost)}</td>
                         <td class="px-3 py-3 whitespace-nowrap text-sm text-blue-600 font-bold">${formatCurrency(grossProfit)}</td>
                         
@@ -1356,6 +1378,14 @@
                 const aggregatedData = closedMap.get(product.name);
                 const openData = openMap.get(product.name);
                 
+                // MODIFICACIÓN: Se elimina el 'if' que omitía productos sin movimiento.
+                /*
+                // Omitir productos que no sean 'Cervezas Devueltas' si no tienen movimiento
+                if (product.name !== "Cervezas Devueltas" && !aggregatedData && !openData) {
+                    return;
+                }
+                */
+                
                 // Caso especial: Solo mostrar devueltas si realmente hubo (Esta lógica se mantiene)
                 if (product.name === "Cervezas Devueltas" && !closedMap.has("Cervezas Devueltas")) {
                     return;
@@ -1440,17 +1470,26 @@
 
         // MODIFICADO: Función para descarga directa
         function downloadCSVFile(csvContent, fileName) {
-            const encodedCsv = encodeURIComponent(csvContent);
-            const dataUrl = `data:text/csv;charset=utf-8,${encodedCsv}`;
-
-            const link = document.createElement('a');
-            link.setAttribute('href', dataUrl);
-            link.setAttribute('download', fileName);
-            document.body.appendChild(link); // Requerido para Firefox
+            // Usar Blob para mejor compatibilidad con caracteres especiales y Excel
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             
-            link.click();
-            
-            document.body.removeChild(link);
+            // IE/Edge
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, fileName);
+            } else {
+                // Navegadores modernos
+                const link = document.createElement('a');
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', fileName);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                }
+            }
         }
 
         // CORRECCIÓN: Se reemplaza la llamada a la función fantasma por la lógica inline.
@@ -1570,6 +1609,7 @@
 
                 document.getElementById('confirm-cancel-close-alert').onclick = () => {
                     document.body.removeChild(confirmElement);
+
                 };
                 
                 document.getElementById('confirm-continue-close-alert').onclick = async () => {
@@ -1608,4 +1648,3 @@
     </script>
 </body>
 </html>
-
