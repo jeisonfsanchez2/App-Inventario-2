@@ -14,14 +14,12 @@
             font-family: 'Inter', sans-serif;
             background-color: #f4f7f9;
         }
-        /* Estilo para la tarjeta principal, imitando un ambiente deportivo */
         .inventory-card {
             background: linear-gradient(145deg, #ffffff, #e6e6e6);
             box-shadow: 10px 10px 30px #d1d9e6, -10px -10px 30px #ffffff;
         }
-        /* Estilo para los botones */
         .btn-primary {
-            background-color: #dc2626; /* Rojo deportivo */
+            background-color: #dc2626;
             transition: all 0.2s ease;
         }
         .btn-primary:hover {
@@ -29,35 +27,33 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .btn-secondary {
-            background-color: #2563eb; /* Azul */
+            background-color: #2563eb;
             transition: all 0.2s ease;
         }
         .btn-secondary:hover {
             background-color: #1e40af;
         }
         .btn-export {
-            background-color: #10b981; /* Verde esmeralda para exportar */
+            background-color: #10b981;
             transition: all 0.2s ease;
         }
         .btn-export:hover {
             background-color: #059669;
         }
         .btn-returns {
-            background-color: #f59e0b; /* Naranja para devoluciones */
+            background-color: #f59e0b;
             transition: all 0.2s ease;
         }
         .btn-returns:hover {
             background-color: #d97706;
         }
         .btn-reset {
-            background-color: #71717a; /* Gris para reset */
+            background-color: #71717a;
             transition: all 0.2s ease;
         }
         .btn-reset:hover {
             background-color: #52525b;
         }
-
-        /* Estilos del modal */
         .modal {
             background-color: rgba(0, 0, 0, 0.5);
             transition: opacity 0.2s ease-in-out;
@@ -69,14 +65,12 @@
         .modal.open .modal-content {
             transform: translateY(0);
         }
-        /* Estilo para tablas que se vean bien en móvil (responsividad) */
         .table-sticky-header thead th {
             position: sticky;
             top: 0;
             background-color: #f7f7f7;
             z-index: 10;
         }
-        /* Estilo para el logo */
         .logo-container {
             display: flex;
             justify-content: center;
@@ -85,14 +79,12 @@
             margin-bottom: 1rem;
         }
         .logo {
-            width: 120px; /* Tamaño fijo para el logo */
+            width: 120px;
             height: 120px;
-            border-radius: 50%; /* Si quieres que sea circular, aunque la imagen ya lo es */
+            border-radius: 50%;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            /* Logo fondo blanco, texto azul, borde rojo */
             border: 4px solid #dc2626; 
         }
-        /* Estilo específico para la tabla de cierre de caja */
         .cash-balance-table th, .cash-balance-table td {
             padding: 0.75rem;
         }
@@ -110,7 +102,6 @@
             border-radius: 0.5rem;
             padding: 0.5rem;
         }
-        /* Estilo para items agotados */
         .out-of-stock-item {
             display: inline-block;
             background-color: #fee2e2;
@@ -121,17 +112,23 @@
             margin: 0.25rem;
             border: 1px solid #fca5a5;
         }
-        /* Scroll personalizado para el historial */
         .history-list-container {
             max-height: 300px;
             overflow-y: auto;
         }
+        #local-warning {
+            display: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Advertencia Local -->
+    <div id="local-warning" class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 text-center text-sm">
+        ⚠️ Estás ejecutando el archivo localmente. La base de datos no conectará hasta que lo subas a Netlify.
+    </div>
+
     <div id="app" class="min-h-screen p-2 sm:p-4 md:p-8">
         <header class="text-center mb-8 relative">
-            <!-- Botón de Historial flotante o en esquina superior -->
             <div class="absolute top-0 right-0 mt-2 mr-2">
                 <button id="open-history-btn" class="bg-gray-800 text-white text-xs sm:text-sm py-2 px-3 rounded-lg shadow hover:bg-gray-700 flex items-center gap-2">
                     <span>📜</span> <span class="hidden sm:inline">Historial Movimientos</span>
@@ -139,7 +136,6 @@
             </div>
 
             <div class="logo-container">
-                <!-- Logo SPB Rojo/Azul -->
                 <img src="https://placehold.co/120x120/ffffff/2563eb?text=SPB" 
                      alt="Logo Sánchez Sport Bar" 
                      class="logo"
@@ -159,21 +155,18 @@
                     <span class="text-2xl mr-2">🛒</span>
                     <h3 class="text-lg font-bold text-red-800">Productos Agotados / Para Comprar (Stock 0)</h3>
                 </div>
-                <div id="out-of-stock-list" class="flex flex-wrap">
-                    <!-- Los items se inyectarán aquí -->
-                </div>
+                <div id="out-of-stock-list" class="flex flex-wrap"></div>
             </div>
         </div>
 
-        <!-- Tarjeta 1: REGISTRO DE ENTREGA (ROL: Quien entrega/añade stock + Valores) -->
+        <!-- Tarjeta 1: REGISTRO DE ENTREGA -->
         <div class="inventory-card max-w-4xl mx-auto p-4 md:p-8 rounded-xl mb-10">
             <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">1. Registrar Stock Inicial / Adición (Entrega)</h2>
 
-            <!-- SECCIÓN: IMPORTAR CSV/EXCEL -->
             <div class="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
                 <h3 class="text-lg font-semibold mb-3 text-blue-600">Opción B: Importar Stock Inicial (CSV/Excel)</h3>
-                <p class="text-sm text-gray-700 mb-3">Sube un archivo de texto/CSV o Excel (.xls, .xlsx) con la lista de productos y la cantidad recibida.</p>
-                <code class="block bg-gray-100 p-2 rounded-lg text-xs mb-3 text-gray-800 font-mono">Formato: Columna A: Producto, Columna B: Unidades Entregadas</code>
+                <p class="text-sm text-gray-700 mb-3">Sube un archivo de texto/CSV o Excel (.xls, .xlsx).</p>
+                <code class="block bg-gray-100 p-2 rounded-lg text-xs mb-3 text-gray-800 font-mono">Formato: Columna A: Producto, Columna B: Unidades</code>
                 <input type="file" id="csv-file-input" accept=".csv, .txt, .xls, .xlsx" class="mb-3 w-full p-2 border border-blue-300 rounded-lg text-sm">
                 <button id="import-csv-btn" class="btn-secondary w-full text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
                     ⬆️ Subir y Abrir Conteo Masivo
@@ -210,11 +203,10 @@
             </form>
         </div>
 
-        <!-- Tarjeta 2: INVENTARIO PENDIENTE DE CIERRE (ROL: Quien recibe/cierra) -->
+        <!-- Tarjeta 2: INVENTARIO PENDIENTE -->
         <div class="inventory-card max-w-6xl mx-auto p-4 md:p-8 rounded-xl mb-10">
             <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">2. Inventario Abierto Pendiente de Cierre</h2>
             
-            <!-- SECCIÓN: REGISTRO RÁPIDO (DEVOLUCIONES Y SHOTS) -->
             <h3 class="text-lg font-semibold mb-3 text-orange-600">Registro Rápido: Devoluciones y Shots</h3>
             <form id="quick-entry-form" class="flex flex-col sm:flex-row gap-4 mb-6 p-4 border border-orange-200 rounded-lg bg-orange-50">
                 <div class="w-full sm:w-1/2">
@@ -238,22 +230,21 @@
                 </div>
                 <div id="quick-entry-message" class="w-full text-center text-sm mt-2 hidden"></div>
             </form>
-            <!-- FIN DE SECCIÓN REGISTRO RÁPIDO -->
 
-            <h3 class="text-lg font-semibold mb-3 text-gray-800">Cierres Pendientes de Stock (Bebidas/Comida)</h3>
+            <h3 class="text-lg font-semibold mb-3 text-gray-800">Cierres Pendientes de Stock</h3>
             <div id="open-inventory-list-container" class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-100">
                         <tr>
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg w-10">#</th>
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unidades Recibidas</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Apertura</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recibidas</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Apertura</th>
                             <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg">Acción</th>
                         </tr>
                     </thead>
                     <tbody id="open-inventory-list" class="bg-white divide-y divide-gray-200">
-                        <tr><td colspan="5" class="p-4 text-center text-gray-500">Cargando ítems abiertos...</td></tr>
+                        <tr><td colspan="5" class="p-4 text-center text-gray-500">Cargando...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -262,16 +253,16 @@
         <!-- Tarjeta 3: HISTORIAL CERRADO -->
         <div class="inventory-card max-w-full mx-auto p-4 md:p-8 rounded-xl mb-10">
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 border-b pb-2">
-                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">3. Historial de Inventario Cerrado (Consumo y Ganancia)</h2>
+                <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-2 sm:mb-0">3. Historial de Inventario Cerrado</h2>
                 <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 mt-2 sm:mt-0">
                     <button id="reset-open-stock-btn" class="btn-reset text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
-                        🔄 Reiniciar Stock Abierto
+                        🔄 Reiniciar Stock
                     </button>
                     <button id="reset-closed-history-btn" class="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
-                        🗑️ Reiniciar Historial Cerrado
+                        🗑️ Borrar Historial Cerrado
                     </button>
                     <button id="export-btn" class="btn-export text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200 text-sm">
-                        ⬇️ Descargar Reporte (Excel)
+                        ⬇️ Reporte Excel
                     </button>
                 </div>
             </div>
@@ -280,145 +271,111 @@
                 <table class="min-w-full divide-y divide-gray-200 table-sticky-header">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Producto</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recibidas (Entrada)</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Restantes (Salida)</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consumo (Usadas)</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venta Unit.</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Unit.</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ganancia Bruta</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Cierre</th>
-                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-lg"></th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entrada</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Salida</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uso</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Venta</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ganancia</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                            <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                         </tr>
                     </thead>
-                    <tbody id="closed-inventory-list" class="bg-white divide-y divide-gray-200">
-                        <!-- Los datos cerrados se insertarán aquí por JavaScript -->
-                    </tbody>
+                    <tbody id="closed-inventory-list" class="bg-white divide-y divide-gray-200"></tbody>
                 </table>
-                <div id="closed-loading-message" class="text-center py-8 text-gray-500">Cargando historial...</div>
+                <div id="closed-loading-message" class="text-center py-8 text-gray-500">Cargando...</div>
             </div>
         </div>
 
-        <!-- Tarjeta 4: CIERRE DE CAJA / BALANCE FINANCIERO -->
+        <!-- Tarjeta 4: CIERRE DE CAJA -->
         <div class="inventory-card max-w-xs mx-auto p-4 md:p-6 rounded-xl">
-            <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">4. Cierre de Caja / Balance Financiero</h2>
-            <!-- Indicador de sincronización -->
-            <div id="sync-status" class="text-center text-xs text-gray-400 mb-2">🔄 Sincronizando...</div>
+            <h2 class="text-xl sm:text-2xl font-semibold mb-6 text-gray-800 border-b pb-2">4. Cierre de Caja</h2>
+            <div id="sync-status" class="text-center text-xs text-gray-400 mb-2">🔄 Conectando...</div>
             
             <div class="flex flex-col space-y-3">
-                
-                <!-- EFECTIVO -->
                 <div class="flex justify-between items-center">
                     <label for="cash-efectivo" class="text-sm font-medium text-gray-700">Efectivo:</label>
                     <input type="number" id="cash-efectivo" min="0" value="0" step="500" class="input-cash w-32 calculate-cash-input">
                 </div>
-                
-                <!-- NEQUI -->
                 <div class="flex justify-between items-center">
                     <label for="cash-nequi" class="text-sm font-medium text-gray-700">Nequi:</label>
                     <input type="number" id="cash-nequi" min="0" value="0" step="500" class="input-cash w-32 calculate-cash-input">
                 </div>
-                
-                <!-- DAVIPLATA -->
                 <div class="flex justify-between items-center">
                     <label for="cash-daviplata" class="text-sm font-medium text-gray-700">Daviplata:</label>
                     <input type="number" id="cash-daviplata" min="0" value="0" step="500" class="input-cash w-32 calculate-cash-input">
                 </div>
-
-                <!-- DEUDAS -->
                 <div class="flex justify-between items-center border-t pt-3">
-                    <label for="cash-deudas" class="text-sm font-medium text-red-600">Deudas (Crédito):</label>
+                    <label for="cash-deudas" class="text-sm font-medium text-red-600">Deudas:</label>
                     <input type="number" id="cash-deudas" min="0" value="0" step="500" class="input-cash w-32 calculate-cash-input">
                 </div>
                 
-                <!-- VENTA BRUTA (NUEVO) -->
-                 <div class="flex justify-between items-center">
-                    <span class="text-base font-bold text-gray-800">VENTA BRUTA ESPERADA (Consumo):</span>
+                <div class="flex justify-between items-center">
+                    <span class="text-base font-bold text-gray-800">VENTA BRUTA:</span>
                     <span id="gross-sales-expected" class="fixed-output text-base text-purple-700 w-32">0</span>
                 </div>
-
-                <!-- GANANCIA BRUTA (CONTROL) -->
                 <div class="flex justify-between items-center">
-                    <span class="text-base font-bold text-gray-800">GANANCIA BRUTA (Control):</span>
+                    <span class="text-base font-bold text-gray-800">GANANCIA:</span>
                     <span id="sales-expected" class="fixed-output text-base text-blue-700 w-32">0</span>
                 </div>
-
-                <!-- TOTAL RINDES -->
                 <div class="flex justify-between items-center border-t border-gray-400 pt-3">
-                    <span class="text-base font-bold text-gray-800">TOTAL RINDES (Efectivo+Digital+Deudas):</span>
+                    <span class="text-base font-bold text-gray-800">TOTAL RINDES:</span>
                     <span id="cash-total" class="fixed-output text-base text-green-700 w-32">0</span>
                 </div>
-               
-                <!-- BALANCE (TOTAL RINDES vs VENTA BRUTA) -->
                 <div class="flex justify-between items-center border-t border-gray-400 pt-3">
                     <span class="text-xl font-extrabold text-gray-900">BALANCE:</span>
                     <span id="cash-balance" class="fixed-output text-xl text-red-700 w-32">0</span>
                 </div>
-
-                <p class="text-xs text-gray-500 pt-2 text-center">El Balance muestra la diferencia entre la Venta Bruta Esperada y el Total que se rinde.</p>
             </div>
         </div>
     </div>
     
-    <!-- Modal para Cierre de Conteo -->
+    <!-- Modales -->
     <div id="close-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
         <div class="modal-content bg-white p-8 rounded-xl shadow-2xl max-w-md w-full">
-            <h3 class="text-xl font-bold mb-4">Cerrar Inventario: <span id="modal-item-name" class="text-red-600"></span></h3>
-            <p class="mb-4 text-gray-600 text-sm">Unidades Iniciales/Recibidas: <span id="modal-received-count" class="font-bold"></span></p>
+            <h3 class="text-xl font-bold mb-4">Cerrar: <span id="modal-item-name" class="text-red-600"></span></h3>
+            <p class="mb-4 text-gray-600 text-sm">Recibidas: <span id="modal-received-count" class="font-bold"></span></p>
             <form id="close-form">
                 <input type="hidden" id="modal-doc-id">
                 <div class="mb-4">
-                    <label for="units-remaining-input" class="block text-sm font-medium text-gray-700 mb-1">Unidades Restantes (Conteo Final)</label>
+                    <label for="units-remaining-input" class="block text-sm font-medium text-gray-700 mb-1">Restantes</label>
                     <input type="number" id="units-remaining-input" required min="0" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500" placeholder="0">
                 </div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="cancel-close" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg font-semibold hover:bg-gray-400">Cancelar</button>
-                    <button type="submit" class="btn-secondary text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">
-                        Confirmar Cierre
-                    </button>
+                    <button type="submit" class="btn-secondary text-white font-bold py-2 px-4 rounded-xl shadow-lg hover:shadow-xl transition duration-200">Confirmar</button>
                 </div>
                 <div id="close-modal-message" class="text-center text-sm mt-3 hidden"></div>
             </form>
         </div>
     </div>
 
-    <!-- Modal para Historial de Movimientos -->
     <div id="history-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
         <div class="modal-content bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col">
             <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="text-xl font-bold text-gray-800">Historial de Movimientos</h3>
+                <h3 class="text-xl font-bold text-gray-800">Historial</h3>
                 <button id="close-history-modal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
             </div>
-            
             <div id="history-list" class="history-list-container flex-grow text-sm text-gray-700 space-y-2">
-                <p class="text-center text-gray-500 py-4">Cargando historial...</p>
+                <p class="text-center text-gray-500 py-4">Cargando...</p>
             </div>
-
             <div class="mt-4 pt-4 border-t flex justify-between items-center bg-gray-50 p-2 rounded-lg">
-                <span class="text-xs text-gray-500 italic">Se almacenan las últimas 100 acciones.</span>
-                <button id="clear-history-btn" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 px-3 rounded-lg">
-                    🗑️ Borrar Historial
-                </button>
+                <span class="text-xs text-gray-500 italic">Últimas 100 acciones.</span>
+                <button id="clear-history-btn" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2 px-3 rounded-lg">Borrar Todo</button>
             </div>
         </div>
     </div>
 
-
-    <!-- Firebase SDKs y Script de la Aplicación -->
     <script type="module">
+        if (window.location.protocol === 'file:') {
+            document.getElementById('local-warning').style.display = 'block';
+        }
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, collection, addDoc, query, onSnapshot, doc, deleteDoc, updateDoc, where, getDoc, getDocs, setDoc, orderBy, limit
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, doc, deleteDoc, updateDoc, where, getDoc, getDocs, setDoc, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Configuración de Firestore para depuración
-        setLogLevel('Debug');
-
-        // Estructura: { name, salePrice, unitCost }
         const PRODUCT_DATA = [
             { name: "Whiskey Botella", sale: 70000, cost: 50000 },
             { name: "Whiskey 1/2", sale: 40000, cost: 25000 },
@@ -456,14 +413,15 @@
             { name: "Detodtito", sale: 3500, cost: 2400 },
             { name: "Todorico", sale: 3500, cost: 2300 },
             { name: "Latas", sale: 3500, cost: 2500 },
-            // ITEMS DE SERVICIO
             { name: "Cervezas Devueltas", sale: 1000, cost: 0 },
             { name: "Shot Aguardiente", sale: 3500, cost: 2200 },
             { name: "Shot Whisky", sale: 4500, cost: 3000 },
             { name: "Shot Tequila", sale: 7000, cost: 5000 }
         ];
         
+        // CORRECCIÓN: Revertido a modo dinámico seguro
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
         const firebaseConfig = (typeof __firebase_config !== 'undefined' && __firebase_config) ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyB-UuyKjp6XY4Tp-nwJC_IWq73GuPoiIoo",
             authDomain: "control-inventarios-3b8ac.firebaseapp.com",
@@ -480,155 +438,123 @@
         let closedInventoryData = []; 
         let openInventoryData = []; 
 
-        let totalGrossSales = 0; 
-        let totalGrossProfit = 0; 
-        let totalCashRendition = 0;
-
-        // Referencias DOM
-        const deliveryForm = document.getElementById('delivery-form');
-        const deliveryItemSelect = document.getElementById('delivery-item-name'); 
-        const openInventoryList = document.getElementById('open-inventory-list');
-        const closedInventoryList = document.getElementById('closed-inventory-list');
-        const userInfoDiv = document.getElementById('user-info');
-        const deliveryFormMessage = document.getElementById('delivery-form-message');
-        const closedLoadingMessage = document.getElementById('closed-loading-message');
-        const exportButton = document.getElementById('export-btn');
-        const resetOpenStockBtn = document.getElementById('reset-open-stock-btn');
-        const resetClosedHistoryBtn = document.getElementById('reset-closed-history-btn');
-        const outOfStockContainer = document.getElementById('out-of-stock-container');
-        const outOfStockList = document.getElementById('out-of-stock-list');
-        const syncStatus = document.getElementById('sync-status');
-
-        const salePriceInput = document.getElementById('sale-price');
-        const unitCostInput = document.getElementById('unit-cost');
-
-        // Nuevo Formulario de Registro Rápido
-        const quickEntryForm = document.getElementById('quick-entry-form');
-        const quickEntryType = document.getElementById('quick-entry-type');
-        const quickEntryCount = document.getElementById('quick-entry-count');
-        const quickEntryMessage = document.getElementById('quick-entry-message');
-
-        const importCsvBtn = document.getElementById('import-csv-btn');
-        const csvFileInput = document.getElementById('csv-file-input');
-        const importMessage = document.getElementById('import-message');
-
-        const efectivoInput = document.getElementById('cash-efectivo');
-        const nequiInput = document.getElementById('cash-nequi');
-        const daviplataInput = document.getElementById('cash-daviplata');
-        const deudasInput = document.getElementById('cash-deudas'); 
-        const totalCashSpan = document.getElementById('cash-total');
-        const grossSalesExpectedSpan = document.getElementById('gross-sales-expected'); 
-        const salesExpectedSpan = document.getElementById('sales-expected'); 
-        const cashBalanceSpan = document.getElementById('cash-balance');
-        const cashInputs = document.querySelectorAll('.calculate-cash-input');
-
-        const closeModal = document.getElementById('close-modal');
-        const closeForm = document.getElementById('close-form');
-        const modalDocId = document.getElementById('modal-doc-id');
-        const unitsRemainingInput = document.getElementById('units-remaining-input');
-        const modalItemName = document.getElementById('modal-item-name');
-        const modalReceivedCount = document.getElementById('modal-received-count');
-        const closeCancelBtn = document.getElementById('cancel-close');
-        const closeModalMessage = document.getElementById('close-modal-message');
-
-        // Historial Modal
-        const historyModal = document.getElementById('history-modal');
-        const openHistoryBtn = document.getElementById('open-history-btn');
-        const closeHistoryModalBtn = document.getElementById('close-history-modal');
-        const historyList = document.getElementById('history-list');
-        const clearHistoryBtn = document.getElementById('clear-history-btn');
-
-        // ITEMS ESPECIALES QUE NO SON STOCK "REAL" PERO SUMAN
         const SERVICE_ITEMS = ["Cervezas Devueltas", "Shot Aguardiente", "Shot Whisky", "Shot Tequila"];
 
-        // --- Funciones de Utilidad ---
+        // DOM Elements
+        const elements = {
+            deliveryForm: document.getElementById('delivery-form'),
+            deliveryItemSelect: document.getElementById('delivery-item-name'),
+            openInventoryList: document.getElementById('open-inventory-list'),
+            closedInventoryList: document.getElementById('closed-inventory-list'),
+            userInfoDiv: document.getElementById('user-info'),
+            deliveryFormMessage: document.getElementById('delivery-form-message'),
+            closedLoadingMessage: document.getElementById('closed-loading-message'),
+            exportButton: document.getElementById('export-btn'),
+            resetOpenStockBtn: document.getElementById('reset-open-stock-btn'),
+            resetClosedHistoryBtn: document.getElementById('reset-closed-history-btn'),
+            outOfStockContainer: document.getElementById('out-of-stock-container'),
+            outOfStockList: document.getElementById('out-of-stock-list'),
+            syncStatus: document.getElementById('sync-status'),
+            salePriceInput: document.getElementById('sale-price'),
+            unitCostInput: document.getElementById('unit-cost'),
+            quickEntryForm: document.getElementById('quick-entry-form'),
+            quickEntryType: document.getElementById('quick-entry-type'),
+            quickEntryCount: document.getElementById('quick-entry-count'),
+            quickEntryMessage: document.getElementById('quick-entry-message'),
+            importCsvBtn: document.getElementById('import-csv-btn'),
+            csvFileInput: document.getElementById('csv-file-input'),
+            importMessage: document.getElementById('import-message'),
+            efectivoInput: document.getElementById('cash-efectivo'),
+            nequiInput: document.getElementById('cash-nequi'),
+            daviplataInput: document.getElementById('cash-daviplata'),
+            deudasInput: document.getElementById('cash-deudas'),
+            totalCashSpan: document.getElementById('cash-total'),
+            grossSalesExpectedSpan: document.getElementById('gross-sales-expected'),
+            salesExpectedSpan: document.getElementById('sales-expected'),
+            cashBalanceSpan: document.getElementById('cash-balance'),
+            closeModal: document.getElementById('close-modal'),
+            closeForm: document.getElementById('close-form'),
+            modalDocId: document.getElementById('modal-doc-id'),
+            unitsRemainingInput: document.getElementById('units-remaining-input'),
+            modalItemName: document.getElementById('modal-item-name'),
+            modalReceivedCount: document.getElementById('modal-received-count'),
+            closeCancelBtn: document.getElementById('cancel-close'),
+            closeModalMessage: document.getElementById('close-modal-message'),
+            historyModal: document.getElementById('history-modal'),
+            openHistoryBtn: document.getElementById('open-history-btn'),
+            closeHistoryModalBtn: document.getElementById('close-history-modal'),
+            historyList: document.getElementById('history-list'),
+            clearHistoryBtn: document.getElementById('clear-history-btn')
+        };
 
         function formatCurrency(amount) {
-            if (typeof amount !== 'number') amount = parseFloat(amount) || 0;
-            return amount.toLocaleString('es-CO', { 
-                style: 'currency', 
-                currency: 'COP', 
-                minimumFractionDigits: 0 
-            });
+            return (parseFloat(amount) || 0).toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 });
         }
-
+        
         function formatDate(date) {
             return date ? new Date(date).toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
         }
 
-        // --- LOGGING SYSTEM ---
         const LOGS_COLLECTION_PATH = `/artifacts/${appId}/public/data/movement_history`;
-
         async function logMovement(action, details) {
             if (!isAuthReady || !userId) return;
             try {
-                await addDoc(collection(db, LOGS_COLLECTION_PATH), {
-                    action: action,
-                    details: details,
-                    timestamp: new Date(),
-                    user: userId
-                });
-            } catch (e) {
-                console.error("Error logging movement:", e);
-            }
+                await addDoc(collection(db, LOGS_COLLECTION_PATH), { action, details, timestamp: new Date(), user: userId });
+            } catch (e) { console.error("Log error:", e); }
         }
 
-        // --- Lógica de Sincronización de Caja (Firestore) ---
         const CASH_COLLECTION_PATH = `/artifacts/${appId}/public/data/cash_register`;
         const CASH_DOC_ID = 'current_status';
         let isUpdatingCashFromRemote = false;
 
         function setupCashSync() {
             const docRef = doc(db, CASH_COLLECTION_PATH, CASH_DOC_ID);
-            
             onSnapshot(docRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     isUpdatingCashFromRemote = true;
-                    
-                    if (document.activeElement !== efectivoInput) efectivoInput.value = data.efectivo || 0;
-                    if (document.activeElement !== nequiInput) nequiInput.value = data.nequi || 0;
-                    if (document.activeElement !== daviplataInput) daviplataInput.value = data.daviplata || 0;
-                    if (document.activeElement !== deudasInput) deudasInput.value = data.deudas || 0;
-                    
+                    if (document.activeElement !== elements.efectivoInput) elements.efectivoInput.value = data.efectivo || 0;
+                    if (document.activeElement !== elements.nequiInput) elements.nequiInput.value = data.nequi || 0;
+                    if (document.activeElement !== elements.daviplataInput) elements.daviplataInput.value = data.daviplata || 0;
+                    if (document.activeElement !== elements.deudasInput) elements.deudasInput.value = data.deudas || 0;
                     isUpdatingCashFromRemote = false;
                     calculateAndDisplayCashBalance();
-                    syncStatus.textContent = '✅ Caja sincronizada';
-                    syncStatus.classList.remove('text-red-500');
-                    syncStatus.classList.add('text-green-500');
+                    elements.syncStatus.textContent = '✅ Sincronizado';
+                    elements.syncStatus.className = 'text-center text-xs text-green-500 mb-2';
                 } else {
-                    setDoc(docRef, { efectivo: 0, nequi: 0, daviplata: 0, deudas: 0 });
+                    setDoc(docRef, { efectivo: 0, nequi: 0, daviplata: 0, deudas: 0 }).catch(e => {
+                        console.error("Error init cash doc:", e);
+                        elements.syncStatus.textContent = '⚠️ Error Permisos';
+                    });
                 }
             }, (error) => {
-                console.error("Error syncing cash:", error);
-                syncStatus.textContent = '❌ Error de conexión';
-                syncStatus.classList.add('text-red-500');
+                console.error("Sync error:", error);
+                elements.syncStatus.textContent = '❌ Error Conexión';
+                elements.syncStatus.className = 'text-center text-xs text-red-500 mb-2';
             });
         }
 
         async function updateCashToRemote() {
             if (isUpdatingCashFromRemote) return;
-            
             const docRef = doc(db, CASH_COLLECTION_PATH, CASH_DOC_ID);
             const data = {
-                efectivo: parseInt(efectivoInput.value) || 0,
-                nequi: parseInt(nequiInput.value) || 0,
-                daviplata: parseInt(daviplataInput.value) || 0,
-                deudas: parseInt(deudasInput.value) || 0
+                efectivo: parseInt(elements.efectivoInput.value) || 0,
+                nequi: parseInt(elements.nequiInput.value) || 0,
+                daviplata: parseInt(elements.daviplataInput.value) || 0,
+                deudas: parseInt(elements.deudasInput.value) || 0
             };
-            
-            syncStatus.textContent = '🔄 Guardando...';
+            elements.syncStatus.textContent = '🔄 Guardando...';
             try {
                 await setDoc(docRef, data, { merge: true });
-                syncStatus.textContent = '✅ Guardado';
+                elements.syncStatus.textContent = '✅ Guardado';
             } catch (e) {
-                console.error("Error saving cash:", e);
-                syncStatus.textContent = '⚠️ Error al guardar';
+                console.error("Save error:", e);
+                elements.syncStatus.textContent = '⚠️ Error al guardar';
             }
         }
 
         let cashTimeout;
-        cashInputs.forEach(input => {
+        document.querySelectorAll('.calculate-cash-input').forEach(input => {
             input.addEventListener('input', () => {
                 calculateAndDisplayCashBalance();
                 clearTimeout(cashTimeout);
@@ -636,1027 +562,368 @@
             });
         });
 
-
         function calculateAndDisplayCashBalance() {
-            let totalProfit = 0;
-            let totalSales = 0;
-            let totalCost = 0;
-
+            let totalProfit = 0, totalSales = 0, totalCost = 0;
             closedInventoryData.forEach(item => {
                 const usage = item.usage || 0;
-                const salePrice = item.salePrice || 0;
-                const unitCost = item.unitCost || 0;
-                
                 totalProfit += item.grossProfit || 0;
-                totalSales += usage * salePrice; 
-                totalCost += usage * unitCost; 
+                totalSales += usage * (item.salePrice || 0);
+                totalCost += usage * (item.unitCost || 0);
             });
             
-            totalGrossProfit = totalProfit;
-            totalGrossSales = totalSales;
-
-            const efectivo = parseInt(efectivoInput.value) || 0;
-            const nequi = parseInt(nequiInput.value) || 0;
-            const daviplata = parseInt(daviplataInput.value) || 0;
-            const deudas = parseInt(deudasInput.value) || 0; 
-            
+            const efectivo = parseInt(elements.efectivoInput.value) || 0;
+            const nequi = parseInt(elements.nequiInput.value) || 0;
+            const daviplata = parseInt(elements.daviplataInput.value) || 0;
+            const deudas = parseInt(elements.deudasInput.value) || 0;
             const totalRecibido = efectivo + nequi + daviplata + deudas;
-            totalCashRendition = totalRecibido;
+            const balance = totalRecibido - totalSales;
 
-            const balance = totalRecibido - totalGrossSales;
+            elements.grossSalesExpectedSpan.textContent = formatCurrency(totalSales);
+            elements.salesExpectedSpan.textContent = formatCurrency(totalProfit);
+            elements.totalCashSpan.textContent = formatCurrency(totalRecibido);
+            elements.cashBalanceSpan.textContent = formatCurrency(balance);
             
-            grossSalesExpectedSpan.textContent = formatCurrency(totalGrossSales);
-            salesExpectedSpan.textContent = formatCurrency(totalGrossProfit);
-            totalCashSpan.textContent = formatCurrency(totalRecibido);
-            cashBalanceSpan.textContent = formatCurrency(balance);
-            
-            cashBalanceSpan.classList.remove('text-red-700', 'text-green-700', 'text-gray-700');
-            if (balance < 0) {
-                cashBalanceSpan.classList.add('text-red-700');
-            } else if (balance > 0) {
-                cashBalanceSpan.classList.add('text-green-700');
-            } else {
-                cashBalanceSpan.classList.add('text-gray-700');
-            }
+            elements.cashBalanceSpan.className = `fixed-output text-xl w-32 ${balance < 0 ? 'text-red-700' : (balance > 0 ? 'text-green-700' : 'text-gray-700')}`;
         }
-        
+
         function updateOutOfStockList() {
-            const activeProducts = new Set();
-            
-            openInventoryData.forEach(item => activeProducts.add(item.itemName));
-            
-            outOfStockList.innerHTML = '';
+            const activeProducts = new Set(openInventoryData.map(i => i.itemName));
+            elements.outOfStockList.innerHTML = '';
             let count = 0;
             
             PRODUCT_DATA.forEach(product => {
                 if (SERVICE_ITEMS.includes(product.name)) return;
-
                 if (!activeProducts.has(product.name)) {
                     const tag = document.createElement('span');
                     tag.className = 'out-of-stock-item';
                     tag.textContent = product.name;
-                    outOfStockList.appendChild(tag);
+                    elements.outOfStockList.appendChild(tag);
                     count++;
                 }
             });
-
-            if (count > 0) {
-                outOfStockContainer.classList.remove('hidden');
-            } else {
-                outOfStockContainer.classList.add('hidden');
-            }
+            elements.outOfStockContainer.classList.toggle('hidden', count === 0);
         }
 
-        
         function populateProductDropdown() {
-            deliveryItemSelect.innerHTML = '<option value="" disabled selected>Selecciona un producto</option>';
+            elements.deliveryItemSelect.innerHTML = '<option value="" disabled selected>Selecciona un producto</option>';
             PRODUCT_DATA.forEach(product => {
                 if (!SERVICE_ITEMS.includes(product.name)) {
                     const option = document.createElement('option');
                     option.value = product.name;
                     option.textContent = product.name;
-                    deliveryItemSelect.appendChild(option.cloneNode(true));
+                    elements.deliveryItemSelect.appendChild(option);
                 }
             });
         }
-        
         populateProductDropdown();
 
-        deliveryItemSelect.addEventListener('change', () => {
-            const selectedName = deliveryItemSelect.value;
-            const product = PRODUCT_DATA.find(p => p.name === selectedName);
-
-            if (product) {
-                salePriceInput.value = product.sale;
-                unitCostInput.value = product.cost;
-            } else {
-                salePriceInput.value = 0;
-                unitCostInput.value = 0;
-            }
+        elements.deliveryItemSelect.addEventListener('change', () => {
+            const product = PRODUCT_DATA.find(p => p.name === elements.deliveryItemSelect.value);
+            elements.salePriceInput.value = product ? product.sale : 0;
+            elements.unitCostInput.value = product ? product.cost : 0;
         });
 
-
-        async function fetchWithRetry(apiCall) {
-            const MAX_RETRIES = 5;
-            let delay = 1000;
-            
-            for (let i = 0; i < MAX_RETRIES; i++) {
-                try {
-                    const result = await apiCall();
-                    return result; 
-                } catch (error) {
-                    if (error.code && (error.code === 'resource-exhausted' || error.code === 'unauthenticated' || error.code === 'unavailable')) {
-                        console.warn(`API Error (${error.code}). Retrying in ${delay}ms...`, error.message);
-                    } else if (i === MAX_RETRIES - 1) {
-                        console.error('Max retries reached. Failing.', error);
-                        throw error;
-                    } else {
-                         console.warn(`API Error (${error.code || 'unknown'}). Retrying in ${delay}ms...`, error.message);
-                    }
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; 
-                }
-            }
-        }
-
         function showMessage(element, message, colorClass) {
-            const isDeliveryForm = element.id === 'delivery-form-message' || element.id === 'import-message';
             element.textContent = message;
-            element.className = `${isDeliveryForm ? 'col-span-2 md:col-span-5' : 'w-full'} text-center text-sm mt-2 ${colorClass}`;
+            element.className = `text-center text-sm mt-2 ${colorClass}`;
             element.classList.remove('hidden');
-            setTimeout(() => {
-                element.classList.add('hidden');
-            }, 5000);
+            setTimeout(() => element.classList.add('hidden'), 5000);
         }
 
-        // --- Inicialización y Autenticación de Firebase ---
+        // INIT FIREBASE
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
 
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    userInfoDiv.innerHTML = `✅ Sesión activa. ID: <span class="font-mono text-xs bg-red-200 px-1 rounded">${userId.substring(0,6)}...</span>`;
-                    isAuthReady = true;
-                    setupInventoryListener();
-                    setupCashSync(); // Iniciar sync de caja
-                } else {
-                    try {
-                        if (initialAuthToken) {
-                            await signInWithCustomToken(auth, initialAuthToken);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (error) {
-                        console.error("Error de autenticación inicial:", error);
-                        userInfoDiv.textContent = '❌ Error al autenticar.';
-                    }
-                }
-            });
-
-        } catch (error) {
-            console.error("Error al inicializar Firebase:", error);
-            userInfoDiv.textContent = '❌ Error de configuración de Firebase.';
-        }
-
-        // --- CRUD de Inventario ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                elements.userInfoDiv.innerHTML = `✅ Sesión activa. ID: <span class="font-mono text-xs bg-red-200 px-1 rounded">${userId.substring(0,6)}...</span>`;
+                isAuthReady = true;
+                setupInventoryListener();
+                setupCashSync();
+            } else {
+                initialAuthToken ? await signInWithCustomToken(auth, initialAuthToken) : await signInAnonymously(auth);
+            }
+        });
 
         const INVENTORY_COLLECTION_PATH = `/artifacts/${appId}/public/data/weekly_inventory_sessions`;
 
-        async function resetOpenInventory() {
-            if (!isAuthReady || !userId) return;
+        function setupInventoryListener() {
+            const q = query(collection(db, INVENTORY_COLLECTION_PATH));
+            onSnapshot(q, (snapshot) => {
+                const openItems = [], closedItems = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const item = { 
+                        id: doc.id, ...data, 
+                        dateOpened: data.dateOpened?.toDate(), 
+                        dateClosed: data.dateClosed?.toDate() 
+                    };
+                    data.status === 'OPEN' ? openItems.push(item) : closedItems.push(item);
+                });
+                closedItems.sort((a, b) => (b.dateClosed || 0) - (a.dateClosed || 0));
+                openItems.sort((a, b) => (b.dateOpened || 0) - (a.dateOpened || 0));
+                openInventoryData = openItems;
+                closedInventoryData = closedItems;
+                renderOpenInventory();
+                renderClosedInventory();
+                updateOutOfStockList();
+            });
+        }
+
+        // RENDER FUNCTIONS
+        function renderOpenInventory() {
+            elements.openInventoryList.innerHTML = '';
             if (openInventoryData.length === 0) {
-                showMessage(deliveryFormMessage, 'No hay stock abierto para reiniciar.', 'text-blue-600');
+                elements.openInventoryList.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">🎉 ¡No hay conteos pendientes!</td></tr>`;
                 return;
             }
-
-            const confirmElement = document.createElement('div');
-            confirmElement.className = 'modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] open';
-            confirmElement.innerHTML = `
-                <div class="modal-content bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-                    <p class="mb-4 font-bold text-gray-700">¿Estás seguro de que quieres eliminar TODO el stock abierto? Esta acción no se puede deshacer.</p>
-                    <div class="flex justify-end space-x-3">
-                        <button id="confirm-cancel-reset" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancelar</button>
-                        <button id="confirm-reset-action" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Sí, Reiniciar</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(confirmElement);
-
-            document.getElementById('confirm-cancel-reset').onclick = () => {
-                document.body.removeChild(confirmElement);
-            };
-
-            document.getElementById('confirm-reset-action').onclick = async () => {
-                document.body.removeChild(confirmElement);
-                try {
-                    const deletePromises = openInventoryData.map(item => {
-                        return fetchWithRetry(() => deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, item.id)));
-                    });
-                    
-                    await Promise.all(deletePromises);
-                    logMovement("Reinicio", "Stock abierto eliminado completamente");
-                    showMessage(deliveryFormMessage, `✅ Stock abierto reiniciado.`, 'text-green-600');
-                } catch (e) {
-                    console.error("Error al reiniciar el stock abierto: ", e);
-                    showMessage(deliveryFormMessage, '❌ Error al intentar reiniciar.', 'text-red-600');
-                }
-            };
-        }
-
-        async function resetClosedInventory() {
-            if (!isAuthReady || !userId) return;
-            if (closedInventoryData.length === 0) {
-                showMessage(deliveryFormMessage, 'No hay historial cerrado para reiniciar.', 'text-blue-600');
-                return;
-            }
-
-            const confirmElement = document.createElement('div');
-            confirmElement.className = 'modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] open';
-            confirmElement.innerHTML = `
-                <div class="modal-content bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-                    <p class="mb-4 font-bold text-red-700">¡ADVERTENCIA! ¿Eliminar TODO el historial cerrado?</p>
-                    <div class="flex justify-end space-x-3">
-                        <button id="confirm-cancel-reset-closed" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancelar</button>
-                        <button id="confirm-reset-action-closed" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Sí, Eliminar</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(confirmElement);
-
-            document.getElementById('confirm-cancel-reset-closed').onclick = () => {
-                document.body.removeChild(confirmElement);
-            };
-
-            document.getElementById('confirm-reset-action-closed').onclick = async () => {
-                document.body.removeChild(confirmElement);
-                try {
-                    const deletePromises = closedInventoryData.map(item => {
-                        return fetchWithRetry(() => deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, item.id)));
-                    });
-                    await Promise.all(deletePromises);
-                    logMovement("Reinicio", "Historial cerrado eliminado completamente");
-                    showMessage(deliveryFormMessage, `✅ Historial cerrado eliminado.`, 'text-green-600');
-                } catch (e) {
-                    console.error("Error al reiniciar el historial cerrado: ", e);
-                    showMessage(deliveryFormMessage, '❌ Error al eliminar historial.', 'text-red-600');
-                }
-            };
-        }
-
-        async function handleDelivery(itemName, quantity, salePrice, unitCost, messageElement) {
-            if (!isAuthReady || !userId) return false;
-            
-            const unitProfit = salePrice - unitCost;
-            
-            try {
-                const q = query(collection(db, INVENTORY_COLLECTION_PATH), 
-                                where("itemName", "==", itemName),
-                                where("status", "==", "OPEN"));
-                
-                const querySnapshot = await fetchWithRetry(() => getDocs(q));
-                
-                if (!querySnapshot.empty) {
-                    const docToUpdate = querySnapshot.docs[0];
-                    const currentReceived = docToUpdate.data().received || 0;
-                    const newReceivedTotal = currentReceived + quantity;
-
-                    await fetchWithRetry(() => updateDoc(docToUpdate.ref, {
-                        received: newReceivedTotal,
-                        salePrice: salePrice, 
-                        unitCost: unitCost,
-                        unitProfit: unitProfit,
-                        dateOpened: new Date(),
-                    }));
-                    logMovement("Actualizar Stock", `${itemName} +${quantity} unidades`);
-                    return `Stock de ${itemName} actualizado: ${newReceivedTotal}`;
-
-                } else {
-                    await fetchWithRetry(() => addDoc(collection(db, INVENTORY_COLLECTION_PATH), {
-                        itemName,
-                        received: quantity,
-                        salePrice: salePrice, 
-                        unitCost: unitCost,   
-                        unitProfit: unitProfit,
-                        remaining: 0, 
-                        status: 'OPEN', 
-                        openedBy: userId,
-                        dateOpened: new Date(),
-                        dateClosed: null,
-                        usage: 0,
-                        grossProfit: 0 
-                    }));
-                    logMovement("Entrada Manual", `${itemName} (x${quantity})`);
-                    return `Nueva sesión de ${itemName} abierta con ${quantity} unidades.`;
-                }
-
-            } catch (e) {
-                console.error("Error al gestionar sesión: ", e);
-                showMessage(messageElement, `Error al gestionar ${itemName}.`, 'text-red-600');
-                return false;
-            }
-        }
-
-        async function handleCloseInventory(docId, remaining, unitProfit, receivedCount) {
-             if (!isAuthReady || !userId) return false;
-
-            try {
-                const docRef = doc(db, INVENTORY_COLLECTION_PATH, docId);
-                
-                const usage = receivedCount - remaining; 
-                const grossProfit = usage * unitProfit; 
-
-                // Obtener nombre para el log antes de actualizar
-                const docSnap = await getDoc(docRef);
-                const itemName = docSnap.exists() ? docSnap.data().itemName : "Producto";
-
-                await fetchWithRetry(() => updateDoc(docRef, {
-                    remaining: remaining,
-                    usage: usage,
-                    grossProfit: grossProfit,
-                    status: 'CLOSED', 
-                    closedBy: userId,
-                    dateClosed: new Date(),
-                }));
-                logMovement("Cierre Inventario", `${itemName}: ${receivedCount} in, ${remaining} out`);
-                return true;
-            } catch (e) {
-                console.error("Error al cerrar sesión: ", e);
-                showMessage(closeModalMessage, 'Error al cerrar el inventario.', 'text-red-600');
-                return false;
-            }
-        }
-
-        // NUEVO: Maneja Registro Rápido (Devoluciones y Shots)
-        async function handleQuickEntry(type, count, price) {
-            if (!isAuthReady || !userId) return;
-
-            // Buscar datos base (costo)
-            const productData = PRODUCT_DATA.find(p => p.name === type);
-            const unitCost = productData ? productData.cost : 0;
-            const unitProfit = price - unitCost;
-            
-            const usage = count; 
-            const grossProfit = usage * unitProfit; 
-
-            try {
-                const docRef = await fetchWithRetry(() => addDoc(collection(db, INVENTORY_COLLECTION_PATH), {
-                    itemName: type,
-                    received: count, 
-                    remaining: 0, 
-                    salePrice: price, 
-                    unitCost: unitCost,   
-                    unitProfit: unitProfit,
-                    usage: usage,
-                    grossProfit: grossProfit,
-                    status: 'CLOSED', // Se cierra inmediatamente
-                    openedBy: userId,
-                    closedBy: userId,
-                    dateOpened: new Date(),
-                    dateClosed: new Date(),
-                }));
-                logMovement("Venta Rápida", `${type} (x${count})`);
-                console.log("Registro rápido ID: ", docRef.id);
-                showMessage(quickEntryMessage, `✅ ${count} x ${type} registrado.`, 'text-green-600');
-            } catch (e) {
-                console.error("Error registro rápido: ", e);
-                showMessage(quickEntryMessage, 'Error al registrar.', 'text-red-600');
-            }
-        }
-        
-        // --- Lógica de Importación ---
-
-        function detectDelimiter(text) {
-            if (text.includes('\t')) return '\t';
-            if (text.includes(';')) return ';';
-            if (text.includes(',')) return ',';
-            return '\t';
-        }
-
-        async function processImportedData(dataRows) {
-            if (!isAuthReady || !userId) {
-                showMessage(importMessage, 'Error de autenticación.', 'text-red-600');
-                return;
-            }
-            
-            const validRows = dataRows.filter(row => row && row.length > 0 && row.some(cell => cell !== null && cell !== ""));
-
-            if (validRows.length <= 1) {
-                showMessage(importMessage, 'El archivo debe contener cabecera y datos.', 'text-red-600');
-                return;
-            }
-
-            const rawHeaders = validRows[0].map(h => String(h).trim().toLowerCase());
-            const itemIndex = rawHeaders.findIndex(h => h.includes('producto'));
-            const qtyIndex = rawHeaders.findIndex(h => h.includes('unidades'));
-            
-            if (itemIndex === -1 || qtyIndex === -1) {
-                showMessage(importMessage, 'Cabeceras incorrectas.', 'text-red-600');
-                return;
-            }
-            
-            let successCount = 0;
-            let errorCount = 0;
-
-            for (let i = 1; i < validRows.length; i++) {
-                const line = validRows[i];
-                const itemName = line[itemIndex] ? String(line[itemIndex]).trim() : null;
-                const quantity = parseInt(line[qtyIndex], 10);
-                const productData = PRODUCT_DATA.find(p => p.name === itemName);
-
-                if (itemName && !isNaN(quantity) && quantity > 0 && productData) {
-                    const salePrice = productData.sale;
-                    const unitCost = productData.cost;
-                    const result = await handleDelivery(itemName, quantity, salePrice, unitCost, importMessage);
-                    if (result !== false) successCount++;
-                    else errorCount++;
-                } else {
-                    errorCount++;
-                }
-            }
-
-            if (successCount > 0) {
-                logMovement("Carga Masiva", `${successCount} productos procesados`);
-                showMessage(importMessage, `✅ ${successCount} registros importados.`, 'text-green-600');
-                csvFileInput.value = '';
-            } else {
-                showMessage(importMessage, 'No se importaron datos válidos.', 'text-red-600');
-            }
-        }
-        
-        importCsvBtn.addEventListener('click', () => {
-            const file = csvFileInput.files[0];
-            if (!file) {
-                showMessage(importMessage, 'Selecciona un archivo.', 'text-red-600');
-                return;
-            }
-
-            const fileName = file.name.toLowerCase();
-            const reader = new FileReader();
-
-            try {
-                if (fileName.endsWith('.csv') || fileName.endsWith('.txt')) {
-                    reader.onload = (event) => {
-                        try {
-                            const csvText = event.target.result;
-                            const delimiter = detectDelimiter(csvText);
-                            const lines = csvText.trim().split('\n').filter(line => line.trim() !== '');
-                            const dataRows = lines.map(line => line.split(delimiter).map(v => v.trim()));
-                            processImportedData(dataRows);
-                        } catch (textError) {
-                            showMessage(importMessage, 'Error procesando texto.', 'text-red-600');
-                        }
-                    };
-                    reader.readAsText(file);
-
-                } else if (fileName.endsWith('.xls') || fileName.endsWith('.xlsx')) {
-                    reader.onload = (event) => {
-                        try {
-                            const arrayBuffer = event.target.result;
-                            const data = new Uint8Array(arrayBuffer);
-                            const workbook = XLSX.read(data, { type: 'array' });
-                            const sheetName = workbook.SheetNames[0];
-                            const worksheet = workbook.Sheets[sheetName];
-                            const dataRows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
-                            processImportedData(dataRows);
-                        } catch (excelError) {
-                            showMessage(importMessage, 'Error procesando Excel.', 'text-red-600');
-                        }
-                    };
-                    reader.readAsArrayBuffer(file); 
-                }
-            } catch (error) {
-                 showMessage(importMessage, 'Error de lectura.', 'text-red-600');
-            }
-        });
-
-
-        // --- Renderizado y Listener de Firestore ---
-
-        function renderOpenInventory(openItems) {
-            openInventoryList.innerHTML = '';
-
-            if (openItems.length === 0) {
-                openInventoryList.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">
-                    🎉 ¡No hay conteos pendientes!
-                </td></tr>`;
-                return;
-            }
-
-            openItems.forEach((item, index) => {
-                const date = item.dateOpened instanceof Date 
-                    ? item.dateOpened.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
-                    : 'N/A';
-                
+            openInventoryData.forEach((item, index) => {
                 if (SERVICE_ITEMS.includes(item.itemName)) return;
-
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-yellow-50 transition duration-150 ease-in-out';
-                row.innerHTML = `
-                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-400 font-mono">${index + 1}</td>
-                    <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${item.itemName}</td>
-                    <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500 font-bold">${item.received}</td>
-                    <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-400">${date}</td>
-                    <td class="px-3 py-3 whitespace-nowrap text-right text-sm font-medium flex space-x-2 justify-end">
-                        <button data-doc-id="${item.id}" class="text-red-600 hover:text-red-900 delete-open-btn text-lg" title="Eliminar">
-                            🗑️
-                        </button>
-                        <button data-doc-id="${item.id}" 
-                                data-item-name="${item.itemName}"
-                                data-received="${item.received}"
-                                data-unit-profit="${item.unitProfit}" 
-                                class="btn-secondary text-white font-bold py-2 px-3 rounded-lg shadow-md open-close-modal-btn">
-                            Cerrar
-                        </button>
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-yellow-50';
+                tr.innerHTML = `
+                    <td class="px-3 py-3 text-xs text-gray-400 font-mono">${index + 1}</td>
+                    <td class="px-3 py-3 text-sm font-medium text-gray-900">${item.itemName}</td>
+                    <td class="px-3 py-3 text-sm text-gray-500 font-bold">${item.received}</td>
+                    <td class="px-3 py-3 text-xs text-gray-400">${formatDate(item.dateOpened)}</td>
+                    <td class="px-3 py-3 text-right text-sm flex justify-end space-x-2">
+                        <button class="text-red-600 hover:text-red-900 text-lg delete-open-btn" data-id="${item.id}">🗑️</button>
+                        <button class="btn-secondary text-white font-bold py-2 px-3 rounded-lg shadow-md open-close-modal-btn" 
+                            data-id="${item.id}" data-name="${item.itemName}" data-recv="${item.received}" data-profit="${item.unitProfit}">Cerrar</button>
                     </td>
                 `;
-                openInventoryList.appendChild(row);
+                elements.openInventoryList.appendChild(tr);
             });
-            
-            openInventoryList.querySelectorAll('.open-close-modal-btn').forEach(button => {
-                button.addEventListener('click', (e) => openCloseModal(e.currentTarget));
-            });
-            openInventoryList.querySelectorAll('.delete-open-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const docId = e.currentTarget.getAttribute('data-doc-id');
-                    deleteInventory(docId, "OPEN");
-                });
-            });
+            document.querySelectorAll('.open-close-modal-btn').forEach(b => b.onclick = () => openCloseModal(b));
+            document.querySelectorAll('.delete-open-btn').forEach(b => b.onclick = () => deleteInventory(b.getAttribute('data-id'), "OPEN"));
         }
 
-        function renderClosedInventory(closedItems) {
-            closedInventoryList.innerHTML = '';
-            closedLoadingMessage.classList.add('hidden');
-            closedInventoryData = closedItems; 
-
-            if (closedItems.length === 0) {
-                closedInventoryList.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-500">
-                    No hay reportes cerrados.
-                </td></tr>`;
+        function renderClosedInventory() {
+            elements.closedInventoryList.innerHTML = '';
+            elements.closedLoadingMessage.classList.add('hidden');
+            if (closedInventoryData.length === 0) {
+                elements.closedInventoryList.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-gray-500">No hay reportes cerrados.</td></tr>`;
             } else {
-                closedItems.forEach(item => {
+                closedInventoryData.forEach(item => {
                     const usage = item.usage;
-                    const salePrice = item.salePrice || 0;
-                    const unitCost = item.unitCost || 0;
-                    const grossProfit = item.grossProfit || 0;
-                    
                     let usageClass = 'text-gray-900';
-                    if (SERVICE_ITEMS.includes(item.itemName)) {
-                        usageClass = 'text-purple-600 font-bold';
-                    } else if (usage > 0) {
-                        usageClass = 'text-green-600 font-bold';
-                    } else if (usage < 0) {
-                        usageClass = 'text-red-600 font-bold'; 
-                    }
+                    if (SERVICE_ITEMS.includes(item.itemName)) usageClass = 'text-purple-600 font-bold';
+                    else if (usage > 0) usageClass = 'text-green-600 font-bold';
+                    else if (usage < 0) usageClass = 'text-red-600 font-bold';
 
-                    const date = item.dateClosed instanceof Date 
-                        ? item.dateClosed.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
-                        : 'N/A';
-
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-red-50 transition duration-150 ease-in-out';
-                    row.innerHTML = `
-                        <td class="px-3 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${item.itemName}</td>
-                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${item.received}</td>
-                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-500">${item.remaining}</td>
-                        <td class="px-3 py-3 whitespace-nowrap text-sm ${usageClass}">${usage}</td>
-                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${formatCurrency(salePrice)}</td>
-                        <td class="px-3 py-3 whitespace-nowrap text-sm text-gray-700">${formatCurrency(unitCost)}</td>
-                        <td class="px-3 py-3 whitespace-nowrap text-sm text-blue-600 font-bold">${formatCurrency(grossProfit)}</td>
-                        <td class="px-3 py-3 whitespace-nowrap text-xs text-gray-400">${date}</td>
-                        <td class="px-3 py-3 whitespace-nowrap text-right text-sm font-medium">
-                            <button data-doc-id="${item.id}" class="text-red-600 hover:text-red-900 delete-closed-btn text-lg">🗑️</button>
+                    const tr = document.createElement('tr');
+                    tr.className = 'hover:bg-red-50';
+                    tr.innerHTML = `
+                        <td class="px-3 py-3 text-sm font-medium text-gray-900">${item.itemName}</td>
+                        <td class="px-3 py-3 text-sm text-gray-500">${item.received}</td>
+                        <td class="px-3 py-3 text-sm text-gray-500">${item.remaining}</td>
+                        <td class="px-3 py-3 text-sm ${usageClass}">${usage}</td>
+                        <td class="px-3 py-3 text-sm text-gray-700">${formatCurrency(item.salePrice)}</td>
+                        <td class="px-3 py-3 text-sm text-gray-700">${formatCurrency(item.unitCost)}</td>
+                        <td class="px-3 py-3 text-sm text-blue-600 font-bold">${formatCurrency(item.grossProfit)}</td>
+                        <td class="px-3 py-3 text-xs text-gray-400">${formatDate(item.dateClosed)}</td>
+                        <td class="px-3 py-3 text-right text-sm">
+                            <button class="text-red-600 hover:text-red-900 text-lg delete-closed-btn" data-id="${item.id}">🗑️</button>
                         </td>
                     `;
-                    closedInventoryList.appendChild(row);
+                    elements.closedInventoryList.appendChild(tr);
                 });
+                document.querySelectorAll('.delete-closed-btn').forEach(b => b.onclick = () => deleteInventory(b.getAttribute('data-id'), "CLOSED"));
             }
-
-            closedInventoryList.querySelectorAll('.delete-closed-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const docId = e.currentTarget.getAttribute('data-doc-id');
-                    deleteInventory(docId, "CLOSED");
-                });
-            });
-
             calculateAndDisplayCashBalance();
         }
 
-        function setupInventoryListener() {
-            if (!isAuthReady) return;
+        // ACTIONS
+        async function handleDelivery(itemName, quantity, salePrice, unitCost) {
+            const unitProfit = salePrice - unitCost;
+            const q = query(collection(db, INVENTORY_COLLECTION_PATH), where("itemName", "==", itemName), where("status", "==", "OPEN"));
+            const snap = await getDocs(q);
             
-            const q = query(collection(db, INVENTORY_COLLECTION_PATH));
-            
-            fetchWithRetry(() => new Promise((resolve, reject) => {
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    const openItems = [];
-                    const closedItems = [];
-                    
-                    snapshot.forEach((doc) => {
-                        const data = doc.data();
-                        const dateOpened = data.dateOpened && data.dateOpened.toDate ? data.dateOpened.toDate() : null;
-                        const dateClosed = data.dateClosed && data.dateClosed.toDate ? data.dateClosed.toDate() : null;
-
-                        const item = { 
-                            id: doc.id, 
-                            ...data,
-                            dateOpened: dateOpened,
-                            dateClosed: dateClosed
-                        };
-                        
-                        if (data.status === 'OPEN') {
-                            openItems.push(item);
-                        } else if (data.status === 'CLOSED') {
-                            closedItems.push(item);
-                        }
-                    });
-                    
-                    closedItems.sort((a, b) => (b.dateClosed?.getTime() || 0) - (a.dateClosed?.getTime() || 0));
-                    openItems.sort((a, b) => (b.dateOpened?.getTime() || 0) - (a.dateOpened?.getTime() || 0));
-
-                    openInventoryData = openItems;
-                    renderOpenInventory(openItems);
-                    renderClosedInventory(closedItems);
-                    
-                    // Actualizar lista de agotados cada vez que cambie el inventario
-                    updateOutOfStockList();
-                    
-                    resolve(unsubscribe);
-                }, (error) => {
-                    console.error("Snapshot error:", error);
-                    reject(error);
-                });
-            }));
-        }
-        
-        async function deleteInventory(docId, status) {
-             if (!isAuthReady || !userId) return;
-
-            const message = status === "OPEN" 
-                ? '¿Eliminar este registro ABIERTO?'
-                : '¿Eliminar registro CERRADO? Se reabrirá el stock.';
-            
-            const confirmElement = document.createElement('div');
-            confirmElement.className = 'modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] open';
-            confirmElement.innerHTML = `
-                <div class="modal-content bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-                    <p class="mb-4 font-bold text-gray-700">${message}</p>
-                    <div class="flex justify-end space-x-3">
-                        <button id="confirm-cancel" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400">Cancelar</button>
-                        <button id="confirm-delete" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Aceptar</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(confirmElement);
-
-            return new Promise((resolve) => {
-                document.getElementById('confirm-cancel').onclick = () => {
-                    document.body.removeChild(confirmElement);
-                    resolve(false);
-                };
-                document.getElementById('confirm-delete').onclick = async () => {
-                    document.body.removeChild(confirmElement);
-                    try {
-                        if (status === "OPEN") {
-                            await fetchWithRetry(() => deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, docId)));
-                            logMovement("Eliminar", "Registro abierto eliminado");
-                            showMessage(deliveryFormMessage, `Eliminado.`, 'text-orange-600');
-                        } else if (status === "CLOSED") {
-                            const docRef = doc(db, INVENTORY_COLLECTION_PATH, docId);
-                            const docSnap = await fetchWithRetry(() => getDoc(docRef));
-
-                            if (docSnap.exists()) {
-                                const data = docSnap.data();
-                                // Si es un servicio, se borra permanentemente, no se reabre
-                                if (SERVICE_ITEMS.includes(data.itemName)) {
-                                     await fetchWithRetry(() => deleteDoc(docRef));
-                                     logMovement("Eliminar", "Servicio eliminado");
-                                     showMessage(deliveryFormMessage, `Registro de servicio eliminado.`, 'text-green-600');
-                                } else {
-                                    await fetchWithRetry(() => addDoc(collection(db, INVENTORY_COLLECTION_PATH), {
-                                        itemName: data.itemName,
-                                        received: data.received,
-                                        salePrice: data.salePrice, 
-                                        unitCost: data.unitCost,   
-                                        unitProfit: data.unitProfit,
-                                        remaining: 0, 
-                                        status: 'OPEN',
-                                        openedBy: userId, 
-                                        dateOpened: new Date(),
-                                        dateClosed: null,
-                                        usage: 0,
-                                        grossProfit: 0 
-                                    }));
-                                    await fetchWithRetry(() => deleteDoc(docRef));
-                                    logMovement("Reabrir", `Registro cerrado de ${data.itemName} reabierto`);
-                                    showMessage(deliveryFormMessage, `Revertido a abierto.`, 'text-green-600');
-                                }
-                            }
-                        }
-                        resolve(true);
-                    } catch (e) {
-                        console.error("Error delete:", e);
-                        resolve(false);
-                    }
-                };
-            });
-        }
-
-
-        function generateCSVContent() {
-            if (PRODUCT_DATA.length === 0) return null;
-
-            const DELIMITER = '\t';
-            let totalProfitInventory = 0;
-            let totalSaleInventory = 0;
-            let totalCostInventory = 0;
-            
-            const closedMap = new Map();
-            closedInventoryData.forEach(item => {
-                const itemName = item.itemName;
-                const usage = item.usage || 0;
-                const received = item.received || 0;
-                const salePrice = item.salePrice || 0;
-                const unitCost = item.unitCost || 0;
-                
-                const itemGrossProfit = item.grossProfit || 0; 
-                totalProfitInventory += itemGrossProfit;
-                totalSaleInventory += usage * salePrice;
-                totalCostInventory += usage * unitCost;
-
-                const existing = closedMap.get(itemName) || { 
-                    itemName, 
-                    totalReceived: 0, 
-                    totalUsage: 0,
-                    totalRemaining: 0,
-                    salePrice: salePrice,
-                    unitCost: unitCost,   
-                };
-                
-                existing.totalReceived += received;
-                existing.totalUsage += usage;
-                existing.totalRemaining += item.remaining || 0;
-                
-                closedMap.set(itemName, existing);
-            });
-
-            const openMap = new Map();
-            openInventoryData.forEach(item => {
-                const itemName = item.itemName;
-                const received = item.received || 0;
-                const existing = openMap.get(itemName) || { totalPending: 0 };
-                existing.totalPending += received;
-                openMap.set(itemName, existing);
-            });
-            
-            const allProductsForExport = [];
-            
-            PRODUCT_DATA.forEach(product => {
-                const aggregatedData = closedMap.get(product.name);
-                const openData = openMap.get(product.name);
-                
-                // Si es un servicio y no tiene movimiento, no mostrar en Excel
-                if (SERVICE_ITEMS.includes(product.name) && !aggregatedData) {
-                    return;
-                }
-                
-                const received = aggregatedData ? aggregatedData.totalReceived : 0;
-                const consumed = aggregatedData ? aggregatedData.totalUsage : 0;
-                const sale = aggregatedData ? aggregatedData.salePrice : product.sale; 
-                const cost = aggregatedData ? aggregatedData.unitCost : product.cost; 
-                
-                const remainingFromClosed = aggregatedData ? aggregatedData.totalRemaining : 0;
-                const pendingInOpen = openData ? openData.totalPending : 0;
-                const stockBalance = remainingFromClosed + pendingInOpen;
-
-                const grossSale = consumed * sale;
-                const grossCost = consumed * cost;
-                const grossProfit = grossSale - grossCost; 
-
-                allProductsForExport.push({
-                    Producto: product.name,
-                    Total_Recibidas_Entradas: received,
-                    Total_Consumidas_Salidas: consumed,
-                    Stock_Balance_Total: stockBalance, 
-                    Precio_Venta_Unitario: sale,
-                    Costo_Unitario: cost,
-                    Venta_Bruta_Total: grossSale,
-                    Costo_Bruto_Total: grossCost,
-                    Ganancia_Bruta_Total: grossProfit, 
-                });
-            });
-
-            const reportHeaders = [
-                "Producto", "Total Recibidas (Entradas)", "Total Consumidas (Salidas/Usadas)", "Stock (Balance Total)",
-                "Precio Venta Unitario", "Costo Unitario", "Venta Bruta Total", "Costo Bruto Total", "Ganancia Bruta (Total)"
-            ];
-            
-            const productRows = allProductsForExport.map(item => {
-                return [
-                    item.Producto, item.Total_Recibidas_Entradas, item.Total_Consumidas_Salidas, item.Stock_Balance_Total, 
-                    item.Precio_Venta_Unitario, item.Costo_Unitario, item.Venta_Bruta_Total, item.Costo_Bruto_Total, item.Ganancia_Bruta_Total,
-                ].join(DELIMITER);
-            });
-
-            const totalInventoryRows = [
-                ["", "", "", "", "", "", "", ""].join(DELIMITER),
-                ["", "", "", "", "", "", "TOTAL VENTA BRUTA:", totalSaleInventory].join(DELIMITER),
-                ["", "", "", "", "", "", "TOTAL COSTO BRUTO:", totalCostInventory].join(DELIMITER),
-                ["", "", "", "", "", "", "TOTAL GANANCIA BRUTA:", totalProfitInventory].join(DELIMITER),
-                ["", "", "", "", "", "", "", ""].join(DELIMITER), 
-            ];
-            
-            const efectivo = (parseInt(efectivoInput.value) || 0);
-            const nequi = (parseInt(nequiInput.value) || 0);
-            const daviplata = (parseInt(daviplataInput.value) || 0);
-            const deudas = (parseInt(deudasInput.value) || 0);
-
-            const totalRindes = efectivo + nequi + daviplata + deudas;
-            const balanceFinal = totalRindes - totalSaleInventory; 
-
-            const cashBalanceBlock = [
-                ["", "RESUMEN DE CIERRE DE CAJA Y BALANCE", "", "", "", "", "", ""].join(DELIMITER),
-                ["EFECTIVO", efectivo, "", "", "", "", "", ""].join(DELIMITER),
-                ["NEQUI", nequi, "", "", "", "", "", ""].join(DELIMITER),
-                ["DAVIPLATA", daviplata, "", "", "", "", "", ""].join(DELIMITER),
-                ["DEUDAS", deudas, "", "", "", "", "", ""].join(DELIMITER),
-                ["", "", "", "", "", "", "TOTAL RINDES:", totalRindes].join(DELIMITER),
-                ["", "", "", "", "", "", "VENTA ESPERADA:", totalSaleInventory].join(DELIMITER),
-                ["", "", "", "", "", "", "BALANCE FINAL:", balanceFinal].join(DELIMITER),
-            ];
-
-            const csvContent = [
-                reportHeaders.join(DELIMITER), ...productRows, ...totalInventoryRows, ...cashBalanceBlock
-            ].join('\n');
-            
-            return csvContent;
-        }
-
-        function downloadCSVFile(csvContent, fileName) {
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            if (navigator.msSaveBlob) {
-                navigator.msSaveBlob(blob, fileName);
+            if (!snap.empty) {
+                const docRef = snap.docs[0].ref;
+                const newTotal = (snap.docs[0].data().received || 0) + quantity;
+                await updateDoc(docRef, { received: newTotal, salePrice, unitCost, unitProfit, dateOpened: new Date() });
+                logMovement("Actualizar Stock", `${itemName} +${quantity}`);
+                return `Stock actualizado: ${newTotal}`;
             } else {
-                const link = document.createElement('a');
-                if (link.download !== undefined) {
-                    const url = URL.createObjectURL(blob);
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', fileName);
-                    link.style.visibility = 'hidden';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
+                await addDoc(collection(db, INVENTORY_COLLECTION_PATH), {
+                    itemName, received: quantity, salePrice, unitCost, unitProfit, remaining: 0, status: 'OPEN',
+                    openedBy: userId, dateOpened: new Date(), usage: 0, grossProfit: 0
+                });
+                logMovement("Entrada Manual", `${itemName} (x${quantity})`);
+                return `Nueva sesión: ${quantity} ${itemName}`;
+            }
+        }
+
+        async function handleQuickEntry(type, count, price) {
+            const prod = PRODUCT_DATA.find(p => p.name === type);
+            const unitCost = prod ? prod.cost : 0;
+            const unitProfit = price - unitCost;
+            await addDoc(collection(db, INVENTORY_COLLECTION_PATH), {
+                itemName: type, received: count, remaining: 0, salePrice: price, unitCost, unitProfit,
+                usage: count, grossProfit: count * unitProfit, status: 'CLOSED', openedBy: userId, closedBy: userId,
+                dateOpened: new Date(), dateClosed: new Date()
+            });
+            logMovement("Venta Rápida", `${type} (x${count})`);
+            showMessage(elements.quickEntryMessage, `✅ ${count} x ${type} registrado.`, 'text-green-600');
+        }
+
+        async function deleteInventory(docId, status) {
+            if (!confirm(status === "OPEN" ? '¿Eliminar este registro ABIERTO?' : '¿Eliminar registro CERRADO? Se reabrirá el stock.')) return;
+            
+            if (status === "OPEN") {
+                await deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, docId));
+                logMovement("Eliminar", "Registro abierto eliminado");
+            } else {
+                const docRef = doc(db, INVENTORY_COLLECTION_PATH, docId);
+                const snap = await getDoc(docRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (SERVICE_ITEMS.includes(data.itemName)) {
+                        await deleteDoc(docRef);
+                        logMovement("Eliminar", "Servicio eliminado");
+                    } else {
+                        await addDoc(collection(db, INVENTORY_COLLECTION_PATH), { ...data, status: 'OPEN', dateClosed: null, usage: 0, grossProfit: 0 });
+                        await deleteDoc(docRef);
+                        logMovement("Reabrir", `Registro ${data.itemName} reabierto`);
+                    }
                 }
             }
         }
 
-        exportButton.addEventListener('click', () => {
-            const csvContent = generateCSVContent();
-            if (!csvContent) {
-                showMessage(deliveryFormMessage, 'No hay datos para reporte.', 'text-orange-600');
-                return;
-            }
-            const date = new Date();
-            const dateString = `${date.getFullYear()}${(date.getMonth() + 1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}`;
-            const fileName = `Reporte_SSB_${dateString}.xls`;
-            downloadCSVFile(csvContent, fileName);
-            showMessage(deliveryFormMessage, '✅ Reporte descargado.', 'text-green-600');
-        });
-
-        resetOpenStockBtn.addEventListener('click', resetOpenInventory);
-        resetClosedHistoryBtn.addEventListener('click', resetClosedInventory);
-
-        // Modales
-        function openCloseModal(button) {
-            const docId = button.getAttribute('data-doc-id');
-            const itemName = button.getAttribute('data-item-name');
-            const receivedCount = button.getAttribute('data-received');
-            const unitProfit = button.getAttribute('data-unit-profit'); 
-
-            modalDocId.value = docId;
-            modalItemName.textContent = itemName;
-            modalReceivedCount.textContent = receivedCount;
-            closeForm.setAttribute('data-unit-profit', unitProfit);
-            closeForm.setAttribute('data-received-count', receivedCount);
-
-            unitsRemainingInput.value = ''; 
-            closeModalMessage.classList.add('hidden');
-            closeModal.classList.remove('opacity-0', 'pointer-events-none');
-            closeModal.classList.add('open');
-            unitsRemainingInput.focus();
-        }
-
-        function closeTheModal() {
-            closeModal.classList.remove('open');
-            closeModal.classList.add('opacity-0', 'pointer-events-none');
-        }
-
-        closeCancelBtn.addEventListener('click', closeTheModal);
-
-        // === LOGICA DE HISTORIAL MODAL ===
-        openHistoryBtn.addEventListener('click', async () => {
-            historyModal.classList.remove('opacity-0', 'pointer-events-none');
-            historyModal.classList.add('open');
+        // EVENT LISTENERS
+        elements.deliveryForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const name = elements.deliveryItemSelect.value;
+            const qty = parseInt(document.getElementById('quantity-delivered').value);
+            const price = parseInt(elements.salePriceInput.value);
+            const cost = parseInt(elements.unitCostInput.value);
+            if (!name || qty <= 0) return showMessage(elements.deliveryFormMessage, 'Datos inválidos.', 'text-red-600');
             
-            // Cargar historial
-            historyList.innerHTML = '<p class="text-center text-gray-500 py-4">Cargando...</p>';
+            const msg = await handleDelivery(name, qty, price, cost);
+            showMessage(elements.deliveryFormMessage, `✅ ${msg}`, 'text-green-600');
+            elements.deliveryForm.reset();
+            elements.deliveryItemSelect.value = "";
+        };
+
+        elements.quickEntryForm.onsubmit = (e) => {
+            e.preventDefault();
+            const type = elements.quickEntryType.value;
+            const count = parseInt(elements.quickEntryCount.value);
+            const price = parseInt(elements.quickEntryType.options[elements.quickEntryType.selectedIndex].getAttribute('data-price'));
+            if (!type || count <= 0) return showMessage(elements.quickEntryMessage, 'Datos inválidos.', 'text-red-600');
+            handleQuickEntry(type, count, price);
+            elements.quickEntryCount.value = '';
+        };
+
+        elements.closeForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const docId = elements.modalDocId.value;
+            const remaining = parseInt(elements.unitsRemainingInput.value);
+            const received = parseInt(elements.closeForm.getAttribute('data-received-count'));
+            const unitProfit = parseInt(elements.closeForm.getAttribute('data-unit-profit'));
             
-            const q = query(collection(db, LOGS_COLLECTION_PATH), orderBy("timestamp", "desc"), limit(100));
+            if (isNaN(remaining) || remaining < 0) return showMessage(elements.closeModalMessage, 'Cantidad inválida.', 'text-red-600');
+            if (remaining > received) return alert("Error: Restantes > Recibidas");
+
+            const docRef = doc(db, INVENTORY_COLLECTION_PATH, docId);
+            await updateDoc(docRef, {
+                remaining, usage: received - remaining, grossProfit: (received - remaining) * unitProfit,
+                status: 'CLOSED', closedBy: userId, dateClosed: new Date()
+            });
+            logMovement("Cierre", `${elements.modalItemName.textContent}: ${received} -> ${remaining}`);
+            elements.closeModal.classList.remove('open');
+            elements.closeModal.classList.add('opacity-0', 'pointer-events-none');
+        };
+
+        // HISTORIAL SIN ORDERBY
+        elements.openHistoryBtn.onclick = async () => {
+            elements.historyModal.classList.remove('opacity-0', 'pointer-events-none');
+            elements.historyModal.classList.add('open');
+            elements.historyList.innerHTML = '<p class="text-center text-gray-500">Cargando...</p>';
+            
+            const q = query(collection(db, LOGS_COLLECTION_PATH), limit(100));
             try {
-                const querySnapshot = await getDocs(q);
-                historyList.innerHTML = '';
-                
-                if (querySnapshot.empty) {
-                    historyList.innerHTML = '<p class="text-center text-gray-500 py-4">No hay movimientos registrados.</p>';
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    elements.historyList.innerHTML = '<p class="text-center text-gray-500">Vacío.</p>';
                     return;
                 }
+                const logs = [];
+                snap.forEach(doc => logs.push(doc.data()));
+                logs.sort((a, b) => b.timestamp.toDate() - a.timestamp.toDate());
 
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const dateStr = formatDate(data.timestamp.toDate());
-                    
-                    const div = document.createElement('div');
-                    div.className = "p-2 border-b border-gray-100 hover:bg-gray-50 flex justify-between";
-                    div.innerHTML = `
-                        <div>
-                            <span class="font-bold text-gray-800">${data.action}</span>
-                            <p class="text-xs text-gray-600">${data.details}</p>
-                        </div>
-                        <div class="text-xs text-gray-400 text-right">
-                            ${dateStr}
-                        </div>
-                    `;
-                    historyList.appendChild(div);
-                });
+                elements.historyList.innerHTML = logs.map(log => `
+                    <div class="p-2 border-b hover:bg-gray-50 flex justify-between">
+                        <div><span class="font-bold">${log.action}</span><p class="text-xs text-gray-600">${log.details}</p></div>
+                        <div class="text-xs text-gray-400">${formatDate(log.timestamp.toDate())}</div>
+                    </div>
+                `).join('');
             } catch (e) {
-                console.error("Error fetching history:", e);
-                historyList.innerHTML = '<p class="text-center text-red-500 py-4">Error al cargar historial.</p>';
+                console.error(e);
+                elements.historyList.innerHTML = '<p class="text-center text-red-500">Error cargando historial.</p>';
             }
-        });
+        };
 
-        closeHistoryModalBtn.addEventListener('click', () => {
-            historyModal.classList.remove('open');
-            historyModal.classList.add('opacity-0', 'pointer-events-none');
-        });
+        elements.closeHistoryModalBtn.onclick = () => {
+            elements.historyModal.classList.remove('open');
+            elements.historyModal.classList.add('opacity-0', 'pointer-events-none');
+        };
 
-        clearHistoryBtn.addEventListener('click', async () => {
-            if(!confirm("¿Seguro que quieres borrar todo el historial de movimientos?")) return;
+        elements.clearHistoryBtn.onclick = async () => {
+            if (!confirm("¿Borrar todo el historial?")) return;
+            const q = query(collection(db, LOGS_COLLECTION_PATH));
+            const snap = await getDocs(q);
+            snap.forEach(d => deleteDoc(d.ref));
+            elements.historyList.innerHTML = '<p class="text-center text-gray-500">Borrado.</p>';
+        };
+
+        // EXCEL / RESET
+        elements.exportButton.onclick = () => {
+            if (!openInventoryData.length && !closedInventoryData.length) return alert("Sin datos");
+            const rows = [["Producto", "Recibido", "Consumo", "Venta", "Costo", "Ganancia"]];
+            closedInventoryData.forEach(i => rows.push([i.itemName, i.received, i.usage, i.salePrice, i.unitCost, i.grossProfit]));
+            openInventoryData.forEach(i => rows.push([i.itemName + " (Abierto)", i.received, "Pendiente", "-", "-", "-"]));
             
-            try {
-                const q = query(collection(db, LOGS_COLLECTION_PATH));
-                const snapshot = await getDocs(q);
-                const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
-                await Promise.all(deletePromises);
-                
-                historyList.innerHTML = '<p class="text-center text-gray-500 py-4">Historial borrado.</p>';
-            } catch (e) {
-                console.error("Error clearing history:", e);
-                alert("Error al borrar historial.");
-            }
-        });
+            rows.push([]);
+            rows.push(["BALANCE CAJA"]);
+            rows.push(["Efectivo", elements.efectivoInput.value]);
+            rows.push(["Nequi", elements.nequiInput.value]);
+            rows.push(["Total Rindes", elements.totalCashSpan.textContent]);
+            rows.push(["Balance Final", elements.cashBalanceSpan.textContent]);
 
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+            XLSX.writeFile(wb, `Reporte_SSB_${new Date().toLocaleDateString().replace(/\//g,'-')}.xlsx`);
+        };
 
-        deliveryForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const itemName = deliveryItemSelect.value.trim(); 
-            const quantity = parseInt(document.getElementById('quantity-delivered').value, 10);
-            const salePrice = parseInt(salePriceInput.value, 10);
-            const unitCost = parseInt(unitCostInput.value, 10);
-            
-            if (!itemName || isNaN(quantity) || quantity <= 0) {
-                showMessage(deliveryFormMessage, 'Datos inválidos.', 'text-red-600');
-                return;
-            }
-            const result = await handleDelivery(itemName, quantity, salePrice, unitCost, deliveryFormMessage);
-            if (result !== false) {
-                showMessage(deliveryFormMessage, `✅ ${result}`, 'text-green-600');
-                deliveryForm.reset();
-                deliveryItemSelect.value = ""; 
-                salePriceInput.value = '';
-                unitCostInput.value = '';
-            }
-        });
+        elements.resetOpenStockBtn.onclick = async () => {
+            if (!confirm("¿Reiniciar stock abierto?")) return;
+            openInventoryData.forEach(i => deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, i.id)));
+        };
+        elements.resetClosedHistoryBtn.onclick = async () => {
+            if (!confirm("¿Borrar historial cerrado?")) return;
+            closedInventoryData.forEach(i => deleteDoc(doc(db, INVENTORY_COLLECTION_PATH, i.id)));
+        };
 
-        closeForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const docId = modalDocId.value;
-            const remaining = parseInt(unitsRemainingInput.value, 10);
-            const received = parseInt(closeForm.getAttribute('data-received-count'), 10);
-            const unitProfit = parseInt(closeForm.getAttribute('data-unit-profit'), 10);
-            
-            if (isNaN(remaining) || remaining < 0) {
-                showMessage(closeModalMessage, 'Cantidad inválida.', 'text-red-600');
-                return;
-            }
-            if (remaining > received) {
-                alert("Error: Las restantes no pueden ser mayores a las recibidas.");
-                return;
-            }
-            const success = await handleCloseInventory(docId, remaining, unitProfit, received);
-            if (success) closeTheModal();
-        });
-
-        quickEntryForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const type = quickEntryType.value;
-            const count = parseInt(quickEntryCount.value, 10);
-            
-            // Obtener precio del dataset de la opción seleccionada
-            const selectedOption = quickEntryType.options[quickEntryType.selectedIndex];
-            const price = parseInt(selectedOption.getAttribute('data-price'), 10);
-
-            if (!type || isNaN(count) || count <= 0) {
-                showMessage(quickEntryMessage, 'Datos inválidos.', 'text-red-600');
-                return;
-            }
-            handleQuickEntry(type, count, price);
-            quickEntryCount.value = '';
-        });
-
+        // Helpers for Modal
+        function openCloseModal(btn) {
+            elements.modalDocId.value = btn.getAttribute('data-id');
+            elements.modalItemName.textContent = btn.getAttribute('data-name');
+            elements.closeForm.setAttribute('data-received-count', btn.getAttribute('data-recv'));
+            elements.closeForm.setAttribute('data-unit-profit', btn.getAttribute('data-profit'));
+            elements.unitsRemainingInput.value = '';
+            elements.closeModalMessage.classList.add('hidden');
+            elements.closeModal.classList.remove('opacity-0', 'pointer-events-none');
+            elements.closeModal.classList.add('open');
+        }
+        elements.closeCancelBtn.onclick = () => {
+            elements.closeModal.classList.remove('open');
+            elements.closeModal.classList.add('opacity-0', 'pointer-events-none');
+        };
     </script>
 </body>
 </html>
