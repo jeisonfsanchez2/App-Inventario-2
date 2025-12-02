@@ -38,7 +38,7 @@
         .history-container { max-height: 300px; overflow-y: auto; font-size: 0.85rem; }
         .history-item { border-bottom: 1px solid #f3f4f6; padding: 8px; }
         .history-item:hover { background-color: #f9fafb; }
-        
+
         /* Estilos para el detalle desplegable */
         details > summary { list-style: none; }
         details > summary::-webkit-details-marker { display: none; }
@@ -267,12 +267,19 @@
         if (window.location.protocol === 'file:') document.getElementById('local-warning').style.display = 'block';
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, doc, deleteDoc, updateDoc, where, getDoc, getDocs, setDoc, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN ADAPTADA PARA ESTE ENTORNO
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        // CONFIGURACIÓN REAL PARA NETLIFY (RESTAURADA)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB-UuyKjp6XY4Tp-nwJC_IWq73GuPoiIoo",
+            authDomain: "control-inventarios-3b8ac.firebaseapp.com",
+            projectId: "control-inventarios-3b8ac",
+            storageBucket: "control-inventarios-3b8ac.firebasestorage.app",
+            messagingSenderId: "1073931280313",
+            appId: "1:1073931280313:web:140e4aadd2d88f6ff6a068",
+            measurementId: "G-FFB84CDHHR"
+        };
 
         const PRODUCT_DATA = [
             { name: "Poker", sale: 3300, cost: 2300 },
@@ -316,8 +323,8 @@
             { name: "Shot Whisky", sale: 4500, cost: 3000 },
             { name: "Shot Tequila", sale: 7000, cost: 5000 }
         ];
-        
-        // ORDEN ESTRICTO PARA EXCEL (según imagen)
+
+        // ORDEN DE EXPORTACIÓN (EXCEL)
         const EXPORT_ORDER = [
             "Whiskey Botella", "Whiskey 1/2", "Whiskey 1/4", "Smirnoff Botella", 
             "Smirnoff 1/2", "Ron 1/2", "Nectar Botella", "Nectar", 
@@ -337,27 +344,19 @@
         const auth = getAuth(app);
         let userId = null, closedData = [], openData = [];
 
-        // AUTHENTICATION FLOW ADAPTED FOR PREVIEW
-        const initAuth = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
-        };
-        initAuth();
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userId = user.uid;
                 document.getElementById('user-info').textContent = `🟢 Conectado: ${userId.slice(0,5)}`;
                 initListeners();
+            } else {
+                // Autenticación anónima robusta
+                signInAnonymously(auth).catch(err => {
+                    console.error("Error Auth:", err);
+                    document.getElementById('user-info').textContent = `🔴 Error: ${err.message}`;
+                });
             }
         });
-
-        // HELPER PARA COLECCIONES COMPATIBLES CON EL ENTORNO
-        const getColRef = (name) => collection(db, 'artifacts', appId, 'public', 'data', name);
-        const getDocRef = (colName, docId) => doc(db, 'artifacts', appId, 'public', 'data', colName, docId);
 
         const COL_INVENTORY = `inv_${APP_ID_FIXED}`;
         const COL_LOGS = `logs_${APP_ID_FIXED}`;
@@ -400,7 +399,8 @@
                 }
             });
 
-            onSnapshot(query(getColRef(COL_INVENTORY)), (snap) => {
+            // ESCUCHA EN TIEMPO REAL (Ruta estándar para Netlify)
+            onSnapshot(query(collection(db, COL_INVENTORY)), (snap) => {
                 openData = []; closedData = [];
                 snap.forEach(doc => {
                     const d = doc.data();
@@ -414,7 +414,7 @@
                 checkStock();
             });
 
-            onSnapshot(getDocRef(COL_CASH, DOC_CASH), (snap) => {
+            onSnapshot(doc(db, COL_CASH, DOC_CASH), (snap) => {
                 if(snap.exists()) {
                     const d = snap.data();
                     if(document.activeElement !== els.cashIn.efectivo) els.cashIn.efectivo.value = d.efectivo || 0;
@@ -425,7 +425,7 @@
                     els.syncStatus.textContent = '✅ Sincronizado';
                     els.syncStatus.className = 'text-center text-xs text-green-500 mb-3';
                 } else {
-                    setDoc(getDocRef(COL_CASH, DOC_CASH), {efectivo:0, nequi:0, daviplata:0, deudas:0});
+                    setDoc(doc(db, COL_CASH, DOC_CASH), {efectivo:0, nequi:0, daviplata:0, deudas:0});
                 }
             });
         }
@@ -522,7 +522,7 @@
         let saveTimer;
         const saveCash = () => {
             els.syncStatus.textContent = '🔄 Guardando...';
-            setDoc(getDocRef(COL_CASH, DOC_CASH), {
+            setDoc(doc(db, COL_CASH, DOC_CASH), {
                 efectivo: parseInt(els.cashIn.efectivo.value)||0,
                 nequi: parseInt(els.cashIn.nequi.value)||0,
                 daviplata: parseInt(els.cashIn.daviplata.value)||0,
@@ -531,7 +531,7 @@
         };
         Object.values(els.cashIn).forEach(i => i.addEventListener('input', () => { calcBalance(); clearTimeout(saveTimer); saveTimer = setTimeout(saveCash, 1000); }));
 
-        const logAction = (act, det) => addDoc(getColRef(COL_LOGS), { action: act, details: det, timestamp: new Date(), user: userId });
+        const logAction = (act, det) => addDoc(collection(db, COL_LOGS), { action: act, details: det, timestamp: new Date(), user: userId });
 
         els.itemSelect.onchange = () => {
             const p = PRODUCT_DATA.find(x => x.name === els.itemSelect.value);
@@ -547,7 +547,7 @@
             
             if(!name || qty <= 0) return;
 
-            const q = query(getColRef(COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN"));
+            const q = query(collection(db, COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN"));
             const snap = await getDocs(q);
 
             if(!snap.empty) {
@@ -555,7 +555,7 @@
                 await updateDoc(d.ref, { received: d.data().received + qty, dateOpened: new Date(), salePrice: price, unitCost: cost });
                 logAction('Actualizar', `${name} +${qty}`);
             } else {
-                await addDoc(getColRef(COL_INVENTORY), {
+                await addDoc(collection(db, COL_INVENTORY), {
                     itemName: name, received: qty, remaining: 0, usage: 0, grossProfit: 0,
                     salePrice: price, unitCost: cost, unitProfit: price - cost,
                     status: 'OPEN', dateOpened: new Date()
@@ -589,7 +589,7 @@
                 const newRecv = existing.received + count;
                 const newTotalProfit = newUsage * profit;
                 
-                await updateDoc(getDocRef(COL_INVENTORY, existing.id), {
+                await updateDoc(doc(db, COL_INVENTORY, existing.id), {
                     usage: newUsage,
                     received: newRecv,
                     grossProfit: newTotalProfit,
@@ -598,7 +598,7 @@
                 logAction('Venta Rápida (+)', `${type} +${count} (Total: ${newUsage})`);
             } else {
                 // Crear nuevo
-                await addDoc(getColRef(COL_INVENTORY), {
+                await addDoc(collection(db, COL_INVENTORY), {
                     itemName: type, received: count, remaining: 0, usage: count, grossProfit: count * profit,
                     salePrice: price, unitCost: cost, unitProfit: profit,
                     status: 'CLOSED', dateOpened: new Date(), dateClosed: new Date()
@@ -613,13 +613,13 @@
         // FUNCIONES GLOBALES
         window.delItem = async (id) => {
             if(!confirm("¿Eliminar este registro permanentemente?")) return;
-            await deleteDoc(getDocRef(COL_INVENTORY, id));
+            await deleteDoc(doc(db, COL_INVENTORY, id));
             logAction('Eliminar', `ID: ${id}`);
         };
 
         window.restoreItem = async (id) => {
             if(!confirm("¿Reabrir este producto para corregirlo?")) return;
-            const ref = getDocRef(COL_INVENTORY, id);
+            const ref = doc(db, COL_INVENTORY, id);
             await updateDoc(ref, {
                 status: 'OPEN',
                 remaining: 0,
@@ -657,7 +657,7 @@
             const usage = recv - rem;
             const profit = usage * (sale - cost);
 
-            await updateDoc(getDocRef(COL_INVENTORY, els.modal.mId.value), {
+            await updateDoc(doc(db, COL_INVENTORY, els.modal.mId.value), {
                 remaining: rem, usage: usage, grossProfit: profit,
                 status: 'CLOSED', dateClosed: new Date()
             });
@@ -665,22 +665,22 @@
             els.modal.mCancel.click();
         };
 
+        // HISTORIAL MEJORADO
         els.hist.btn.onclick = async () => {
             els.hist.modal.classList.remove('pointer-events-none', 'opacity-0');
             els.hist.modal.classList.add('open');
             els.hist.list.innerHTML = '<p class="text-center p-4">Cargando...</p>';
-            const snap = await getDocs(query(getColRef(COL_LOGS), limit(50)));
+            const snap = await getDocs(query(collection(db, COL_LOGS), limit(50)));
             const logs = []; snap.forEach(d => logs.push(d.data()));
             logs.sort((a,b) => b.timestamp.toDate() - a.timestamp.toDate());
             
-            // RENDERIZADO MEJORADO CON DETALLE COLAPSABLE
             els.hist.list.innerHTML = logs.map(l => {
                 let content = l.details;
-                // Detectar si es un log multilinea (importación masiva)
+                // Detectar multilinea (importación masiva)
                 if (content.includes('\n')) {
                     const parts = content.split('\n');
-                    const header = parts[0]; // Ej: "Cargados 5 registros:"
-                    const body = parts.slice(1).join('\n'); // El resto de la lista
+                    const header = parts[0]; 
+                    const body = parts.slice(1).join('\n');
                     content = `
                         <div>${header}</div>
                         <details class="group mt-1">
@@ -700,28 +700,23 @@
         els.hist.close.onclick = () => { els.hist.modal.classList.remove('open'); els.hist.modal.classList.add('pointer-events-none', 'opacity-0'); };
         els.hist.clear.onclick = async () => {
             if(!confirm("¿Borrar TODO el historial?")) return;
-            const snap = await getDocs(getColRef(COL_LOGS));
+            const snap = await getDocs(collection(db, COL_LOGS));
             snap.forEach(d => deleteDoc(d.ref));
             els.hist.list.innerHTML = '<p class="text-center p-4">Borrado.</p>';
         };
 
-        els.btns.resetOpen.onclick = async () => { if(confirm("¿Reiniciar stock abierto?")) openData.forEach(i => deleteDoc(getDocRef(COL_INVENTORY, i.id))); };
-        els.btns.resetClosed.onclick = async () => { if(confirm("¿Borrar reporte cerrado?")) closedData.forEach(i => deleteDoc(getDocRef(COL_INVENTORY, i.id))); };
+        els.btns.resetOpen.onclick = async () => { if(confirm("¿Reiniciar stock abierto?")) openData.forEach(i => deleteDoc(doc(db, COL_INVENTORY, i.id))); };
+        els.btns.resetClosed.onclick = async () => { if(confirm("¿Borrar reporte cerrado?")) closedData.forEach(i => deleteDoc(doc(db, COL_INVENTORY, i.id))); };
         
         els.btns.export.onclick = () => {
-            // Ya no validamos si hay datos cerrados, porque exportamos la lista maestra incluso con ceros.
             const rows = [["Producto","Entrada","Salida (Sobra)","Uso","Venta","Costo","Ganancia"]];
             
-            // Iteramos sobre el orden estricto de productos
+            // EXPORTACIÓN ORDENADA (INCLUYE ITEMS EN 0)
             EXPORT_ORDER.forEach(prodName => {
-                // Buscamos si existe en los datos cerrados de hoy
                 const item = closedData.find(d => d.itemName === prodName);
-                
                 if (item) {
-                    // Si existe, usamos sus datos reales
                     rows.push([item.itemName, item.received, item.remaining, item.usage, item.salePrice, item.unitCost, item.grossProfit]);
                 } else {
-                    // Si no existe, buscamos su precio base en PRODUCT_DATA para rellenar, y ponemos todo lo demás en 0
                     const baseData = PRODUCT_DATA.find(p => p.name === prodName) || {sale: 0, cost: 0};
                     rows.push([prodName, 0, 0, 0, baseData.sale, baseData.cost, 0]);
                 }
@@ -745,7 +740,7 @@
             if(!f) return;
             const r = new FileReader();
             
-            // MODIFICADO: Función async para procesar secuencialmente y generar reporte detallado
+            // LECTURA ASÍNCRONA PARA LOG DETALLADO
             r.onload = async (e) => {
                 let rows = [];
                 if(f.name.endsWith('.csv') || f.name.endsWith('.txt')) {
@@ -756,9 +751,8 @@
                 }
                 
                 let count = 0;
-                let summaryList = []; // Lista para acumular detalles
+                let summaryList = [];
 
-                // Usamos bucle FOR normal para poder usar AWAIT y esperar que termine cada item
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i];
                     const name = row[0]?.trim();
@@ -767,25 +761,24 @@
                     
                     if(p && qty > 0) {
                         const profit = p.sale - p.cost;
-                        const q = query(getColRef(COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN"));
+                        const q = query(collection(db, COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN"));
                         const snap = await getDocs(q);
                         
                         if(!snap.empty) {
                             const d = snap.docs[0];
                             await updateDoc(d.ref, { received: d.data().received + qty, dateOpened: new Date() });
                         } else {
-                            await addDoc(getColRef(COL_INVENTORY), {
+                            await addDoc(collection(db, COL_INVENTORY), {
                                 itemName: name, received: qty, remaining: 0, usage: 0, grossProfit: 0,
                                 salePrice: p.sale, unitCost: p.cost, unitProfit: profit,
                                 status: 'OPEN', dateOpened: new Date()
                             });
                         }
                         count++;
-                        summaryList.push(`• ${qty} ${name}`); // Agregar al resumen
+                        summaryList.push(`• ${qty} ${name}`);
                     }
                 }
 
-                // Generamos el reporte final DESPUÉS de procesar todo
                 if (count > 0) {
                     const detailedLog = `Total cargados: ${count} registros:\n` + summaryList.join('\n');
                     logAction('Importación Masiva', detailedLog);
@@ -793,7 +786,7 @@
                 } else {
                     showMsg(els.imp.msg, `No se encontraron items válidos`, 'text-red-600');
                 }
-                els.imp.input.value = ''; // Limpiar input
+                els.imp.input.value = '';
             };
             f.name.endsWith('x') ? r.readAsArrayBuffer(f) : r.readAsText(f);
         };
