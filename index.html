@@ -174,7 +174,7 @@
                 <div class="flex flex-wrap gap-2 justify-end">
                     <!-- BOTÓN NUEVO: RECARGAR SOBRANTES -->
                     <button id="reload-leftovers-btn" class="btn-reload text-white text-xs font-bold py-2 px-3 rounded shadow flex items-center gap-1" title="Cargar sobrantes del reporte a la barra para mañana">
-                        🔄 Cargar Sobrantes a Barra
+                        📥 Cargar Sobrantes a Barra
                     </button>
                     <button id="reset-open-stock-btn" class="btn-reset text-white text-xs font-bold py-2 px-3 rounded">Reiniciar Stock</button>
                     <button id="reset-closed-history-btn" class="bg-red-700 text-white text-xs font-bold py-2 px-3 rounded hover:bg-red-800">Borrar Reporte</button>
@@ -668,16 +668,33 @@
             });
         }
 
+        // --- CORRECCIÓN LÓGICA AGOTADOS ---
         function checkStock() {
-            const active = new Set(openData.map(i => i.itemName));
-            closedData.forEach(i => { if(i.remaining > 0) active.add(i.itemName); });
+            // Un producto NO está agotado si:
+            // 1. Está abierto.
+            // 2. O está cerrado con sobras > 0.
+            const hasStock = new Set();
+
+            openData.forEach(i => hasStock.add(i.itemName));
+            
+            closedData.forEach(i => {
+                if (i.remaining > 0) {
+                    hasStock.add(i.itemName);
+                }
+            });
+
             els.outStockList.innerHTML = '';
             let c = 0;
             PRODUCT_DATA.forEach(p => {
                 if(SERVICE_ITEMS.includes(p.name)) return;
-                if(!active.has(p.name)) {
-                    const sp = document.createElement('span'); sp.className = "out-of-stock-item"; sp.textContent = p.name;
-                    els.outStockList.appendChild(sp); c++;
+                
+                // Si no está en la lista de "Con Stock", entonces está Agotado
+                if(!hasStock.has(p.name)) {
+                    const sp = document.createElement('span'); 
+                    sp.className = "out-of-stock-item"; 
+                    sp.textContent = p.name;
+                    els.outStockList.appendChild(sp); 
+                    c++;
                 }
             });
             els.outStockCont.classList.toggle('hidden', c === 0);
@@ -893,41 +910,83 @@
             els.modal.mCancel.click();
         };
 
+        // FUNCIÓN REESCRITA Y MEJORADA PARA CARGAR SOBRAS (MODIFICADA)
         els.btns.reloadLeftovers.onclick = async () => {
-            if(!confirm("¿Cargar los sobrantes del reporte como nuevo inventario inicial?")) return;
-            let count = 0;
-            const leftovers = {}; 
-            closedData.forEach(item => {
-                if(item.remaining > 0) {
-                    if(!leftovers[item.itemName]) leftovers[item.itemName] = 0;
-                    leftovers[item.itemName] += item.remaining;
+            
+            // 1. Agrupar por producto, quedándonos solo con el registro más reciente (fecha de cierre más nueva)
+            const latestRecords = {};
+            
+            // closedData ya viene ordenado por fecha de cierre descendente (del más nuevo al más viejo)
+            const sortedClosed = [...closedData].sort((a,b) => (b.dateClosed?.getTime() || 0) - (a.dateClosed?.getTime() || 0));
+
+            sortedClosed.forEach(item => {
+                if(!latestRecords[item.itemName]) {
+                    // Si es el primero que encontramos (el más reciente), lo guardamos
+                    latestRecords[item.itemName] = item;
                 }
             });
+
+            // 2. Extraer sobrantes solo de esos registros recientes
+            const leftovers = {};
+            Object.values(latestRecords).forEach(item => {
+                const sobra = parseInt(item.remaining) || 0;
+                if(sobra > 0) {
+                    leftovers[item.itemName] = sobra;
+                }
+            });
+
+            if(Object.keys(leftovers).length === 0) return alert("No hay sobrantes registrados en el reporte para cargar.");
+
+            // 3. Mensaje de confirmación detallado
+            let msg = "Se cargarán los siguientes sobrantes a barra (basado en el ÚLTIMO cierre):\n\n";
+            for (const [name, qty] of Object.entries(leftovers)) {
+                msg += `• ${name}: ${qty} unidades\n`;
+            }
+            msg += "\n¿Confirmar carga?";
+
+            if(!confirm(msg)) return;
+
+            // 4. Ejecutar Carga
+            let count = 0;
+            const batchLog = [];
+
             for (const [name, qty] of Object.entries(leftovers)) {
                 const p = PRODUCT_DATA.find(x => x.name === name);
                 const price = p ? p.sale : 0;
                 const cost = p ? p.cost : 0;
                 const profit = price - cost;
+
+                // Buscar si ya existe abierto para SUMARLE
                 const q = query(collection(db, COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN"));
                 const snap = await getDocs(q);
+                
                 if(!snap.empty) {
                      const d = snap.docs[0];
-                     await updateDoc(d.ref, { received: d.data().received + qty, dateOpened: new Date() });
+                     const currentQty = parseInt(d.data().received) || 0;
+                     await updateDoc(d.ref, { 
+                         received: currentQty + qty, // Sumar lo que había + lo que sobró
+                         dateOpened: new Date() 
+                     });
                 } else {
                      await addDoc(collection(db, COL_INVENTORY), {
-                        itemName: name, received: qty, remaining: 0, usage: 0, grossProfit: 0,
-                        salePrice: price, unitCost: cost, unitProfit: profit,
-                        status: 'OPEN', dateOpened: new Date()
+                        itemName: name, 
+                        received: qty, // La entrada es EXACTAMENTE lo que sobró
+                        remaining: 0, 
+                        usage: 0, 
+                        grossProfit: 0,
+                        salePrice: price, 
+                        unitCost: cost, 
+                        unitProfit: profit,
+                        status: 'OPEN', 
+                        dateOpened: new Date()
                     });
                 }
                 count++;
+                batchLog.push(`${name}: ${qty}`);
             }
-            if(count > 0) {
-                logAction('Carga Sobrantes', `Se cargaron ${count} productos del reporte a barra.`);
-                alert(`Se cargaron ${count} productos a la barra.`);
-            } else {
-                alert("No hay sobrantes en el reporte para cargar.");
-            }
+            
+            logAction('Carga Sobrantes', `Se pasaron ${count} items a barra: ${batchLog.join(', ')}`);
+            alert(`Proceso completado. Se cargaron ${count} productos a la barra basados en los sobrantes.`);
         };
 
         els.btns.closePending.onclick = async () => {
