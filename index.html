@@ -140,7 +140,7 @@
                         <option value="Cervezas Devueltas" data-price="1000">Cervezas Devueltas ($1.000)</option>
                         <option value="Shot Aguardiente" data-price="3500">Shot Aguardiente ($3.500)</option>
                         <option value="Shot Whisky" data-price="4500">Shot Whisky ($4.500)</option>
-                        <option value="Shot Tequila" data-price="7000">Shot Tequila ($7.000)</option>
+                        <option value="Shot Tequila" data-price="7500">Shot Tequila ($7.500)</option>
                     </select>
                     <input type="number" id="quick-entry-count" class="p-2 border rounded text-sm w-24" placeholder="Cant." min="1">
                     <button type="submit" class="btn-returns text-white px-4 py-2 rounded font-bold text-sm">Registrar</button>
@@ -385,51 +385,51 @@
         };
 
         const PRODUCT_DATA = [
-            { name: "Poker", sale: 3300, cost: 2300 },
-            { name: "Aguila", sale: 3300, cost: 2300 },
-            { name: "Budwaiser", sale: 3300, cost: 2300 },
-            { name: "Costeña Negra", sale: 3000, cost: 1700 },
-            { name: "Costeña Verde", sale: 3000, cost: 1500 },
-            { name: "Club", sale: 4000, cost: 3000 },
-            { name: "Corona", sale: 6000, cost: 3700 },
-            { name: "Coronita", sale: 4000, cost: 2800 },
-            { name: "Reds", sale: 4500, cost: 3000 },
-            { name: "Light", sale: 3500, cost: 2500 },
-            { name: "Whiskey Botella", sale: 70000, cost: 50000 },
-            { name: "Whiskey 1/2", sale: 40000, cost: 25000 },
+            { name: "Whiskey Botella", sale: 75000, cost: 55600 },
+            { name: "Whiskey 1/2", sale: 40000, cost: 28000 },
             { name: "Whiskey 1/4", sale: 55000, cost: 40000 },
-            { name: "Smirnoff Botella", sale: 70000, cost: 40000 },
-            { name: "Smirnoff 1/2", sale: 40000, cost: 20000 },
-            { name: "Ron 1/2", sale: 40000, cost: 28000 },
-            { name: "Nectar Botella", sale: 60000, cost: 38000 },
-            { name: "Nectar", sale: 32000, cost: 20000 },
-            { name: "Antioqueño Azul", sale: 38000, cost: 26000 },
-            { name: "Antioqueño Verde", sale: 35000, cost: 23000 },
-            { name: "Amarillo Botella", sale: 70000, cost: 47000 },
-            { name: "Amarillo 1/2", sale: 40000, cost: 23000 },
-            { name: "Tequila", sale: 70000, cost: 50000 },
-            { name: "Like", sale: 4500, cost: 3000 },
-            { name: "Smirnoff Ice", sale: 10000, cost: 5500 },
-            { name: "Cuates", sale: 6000, cost: 4500 },
-            { name: "Pony Malta", sale: 3200, cost: 2200 },
-            { name: "Hit", sale: 3200, cost: 2200 },
-            { name: "Sporade", sale: 3200, cost: 2200 },
+            { name: "Smirnoff Botella", sale: 70000, cost: 43200 },
+            { name: "Smirnoff 1/2", sale: 40000, cost: 23700 },
+            { name: "Ron 1/2", sale: 42000, cost: 27400 },
+            { name: "Nectar Botella", sale: 62000, cost: 41600 },
+            { name: "Nectar 1/2", sale: 34000, cost: 22000 }, // Corregido: "Nectar 1/2"
+            { name: "Antioqueño Azul", sale: 40000, cost: 27400 },
+            { name: "Antioqueño Verde", sale: 36000, cost: 23200 },
+            { name: "Amarillo Botella", sale: 73000, cost: 48100 },
+            { name: "Amarillo 1/2", sale: 42000, cost: 25400 },
+            { name: "Tequila", sale: 75000, cost: 56000 },
+            { name: "Like", sale: 5000, cost: 3650 },
+            { name: "Smirnoff Ice", sale: 10000, cost: 6500 },
+            { name: "Cuates", sale: 6000, cost: 3650 },
+            { name: "Corona", sale: 6000, cost: 3700 },
+            { name: "Coronita", sale: 4000, cost: 2850 },
+            { name: "Budwaiser", sale: 3300, cost: 2350 },
+            { name: "Pony Malta", sale: 3300, cost: 1700 },
+            { name: "Hit", sale: 3300, cost: 2950 },
+            { name: "Sporade", sale: 3300, cost: 2250 },
             { name: "Agua", sale: 2000, cost: 1000 },
-            { name: "Cocacola", sale: 3200, cost: 2200 },
+            { name: "Cocacola", sale: 3300, cost: 2200 },
+            { name: "Club", sale: 4000, cost: 2900 },
+            { name: "Reds", sale: 4500, cost: 2900 },
+            { name: "Costeña Negra", sale: 3000, cost: 1550 },
+            { name: "Costeña Verde", sale: 3000, cost: 1700 },
+            { name: "Light", sale: 3500, cost: 2300 },
+            { name: "Aguila", sale: 3300, cost: 2250 },
+            { name: "Poker", sale: 3300, cost: 2150 },
             { name: "Doritos", sale: 3200, cost: 1600 },
             { name: "Papas", sale: 3200, cost: 2000 },
             { name: "Detodtito", sale: 3500, cost: 2400 },
-            { name: "Todorico", sale: 3500, cost: 2300 },
-            { name: "Latas", sale: 3500, cost: 2500 },
+            { name: "Todorico", sale: 3500, cost: 1725 },
+            { name: "Latas", sale: 4000, cost: 2750 },
             { name: "Cervezas Devueltas", sale: 1000, cost: 0 },
             { name: "Shot Aguardiente", sale: 3500, cost: 2200 },
             { name: "Shot Whisky", sale: 4500, cost: 3000 },
-            { name: "Shot Tequila", sale: 7000, cost: 5000 }
+            { name: "Shot Tequila", sale: 7500, cost: 5000 } // Corregido: Shot Tequila a 7500
         ];
 
         const EXPORT_ORDER = [
             "Whiskey Botella", "Whiskey 1/2", "Whiskey 1/4", "Smirnoff Botella", 
-            "Smirnoff 1/2", "Ron 1/2", "Nectar Botella", "Nectar", 
+            "Smirnoff 1/2", "Ron 1/2", "Nectar Botella", "Nectar 1/2", 
             "Antioqueño Azul", "Antioqueño Verde", "Amarillo Botella", 
             "Amarillo 1/2", "Tequila", "Like", "Smirnoff Ice", "Cuates", 
             "Corona", "Coronita", "Budwaiser", "Pony Malta", "Hit", 
