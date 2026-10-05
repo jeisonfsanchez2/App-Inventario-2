@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sánchez Sport Bar v2</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS para Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Fuentes -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f4f7f9; }
@@ -15,35 +18,22 @@
         .btn-export { background-color: #10b981; transition: 0.2s; } .btn-export:hover { background-color: #059669; }
         .btn-reset { background-color: #71717a; transition: 0.2s; } .btn-reset:hover { background-color: #52525b; }
         .btn-returns { background-color: #f59e0b; transition: 0.2s; } .btn-returns:hover { background-color: #d97706; }
-        .btn-debt { background-color: #7c3aed; transition: 0.2s; } .btn-debt:hover { background-color: #6d28d9; }
         .btn-reload { background-color: #0891b2; transition: 0.2s; } .btn-reload:hover { background-color: #0e7490; }
         .btn-close-all { background-color: #4b5563; transition: 0.2s; } .btn-close-all:hover { background-color: #374151; }
         
-        .logo { 
-            width: 120px; height: 120px; border-radius: 50%; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
-            border: 4px solid #dc2626; 
-        }
+        /* Ajuste de Logo */
+        .logo { width: 140px; height: 140px; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: 4px solid #dc2626; object-fit: cover; background-color: black; }
         .modal { background-color: rgba(0,0,0,0.5); transition: opacity 0.2s; }
         .modal-content { transform: translateY(-20px); transition: transform 0.3s; }
         .modal.open .modal-content { transform: translateY(0); }
         .table-sticky-header th { position: sticky; top: 0; background-color: #f7f7f7; z-index: 10; }
         .input-cash { border: 1px solid #e5e7eb; border-radius: 0.5rem; padding: 0.5rem; width: 100%; text-align: right; }
-        .fixed-output { background-color: #f3f4f6; font-weight: 600; text-align: right; border-radius: 0.5rem; padding: 0.5rem; }
         
-        .out-of-stock-item {
-            display: inline-block; background-color: #fee2e2; color: #b91c1c;
-            padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin: 2px; border: 1px solid #fca5a5;
-        }
-        .history-container { max-height: 300px; overflow-y: auto; font-size: 0.85rem; }
-        .history-item { border-bottom: 1px solid #f3f4f6; padding: 8px; }
+        .out-of-stock-item { display: inline-block; background-color: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; margin: 2px; border: 1px solid #fca5a5; }
+        .history-container { max-height: 400px; overflow-y: auto; font-size: 0.85rem; }
+        .history-item { border-bottom: 1px solid #f3f4f6; padding: 8px; transition: 0.2s; }
         .history-item:hover { background-color: #f9fafb; }
         .debtor-item:hover { background-color: #f3f4f6; }
-
-        /* Estilos para el detalle desplegable */
-        details > summary { list-style: none; }
-        details > summary::-webkit-details-marker { display: none; }
-        
         #local-warning { display: none; }
     </style>
 </head>
@@ -53,33 +43,29 @@
     </div>
 
     <div id="app" class="min-h-screen p-2 sm:p-4 md:p-8">
+        <!-- HEADER -->
         <header class="text-center mb-8 relative">
             <div class="absolute top-0 right-0 mt-2 mr-2">
-                <button id="open-history-btn" class="bg-gray-800 text-white text-xs py-2 px-3 rounded shadow hover:bg-gray-700 flex items-center gap-2">
-                    📜 <span class="hidden sm:inline">Historial</span>
-                </button>
+                <button id="open-history-btn" class="bg-gray-800 text-white text-xs py-2 px-3 rounded shadow hover:bg-gray-700 flex items-center gap-2">📜 <span class="hidden sm:inline">Historial</span></button>
             </div>
-            <div class="flex justify-center mb-4">
-                <img src="https://placehold.co/120x120/ffffff/2563eb?text=SPB" class="logo" alt="Logo">
-            </div>
-            <h1 class="text-3xl font-bold text-gray-800">Sánchez Sport Bar v2</h1>
-            <p class="text-gray-600 text-sm">Control de Inventarios y Caja</p>
+            <!-- LOGO ACTUALIZADO -->
+            <div class="flex justify-center mb-4"><img src="https://i.imgur.com/crEnZHt.png" class="logo" alt="Sánchez Sport Bar Logo"></div>
+            <h1 class="text-3xl font-bold text-gray-800">Sánchez Sport Bar</h1>
+            <p class="text-gray-600 text-sm">Control de Inventarios y Caja v2</p>
             <div id="user-info" class="mt-2 text-xs text-gray-400">Conectando...</div>
         </header>
 
+        <!-- BANNER AGOTADOS -->
         <div id="out-of-stock-container" class="max-w-6xl mx-auto mb-6 hidden">
             <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-sm">
-                <div class="flex items-center mb-2">
-                    <span class="text-xl mr-2">🛒</span>
-                    <h3 class="text-sm font-bold text-red-800">Productos Agotados / Por Comprar (Stock 0)</h3>
-                </div>
+                <div class="flex items-center mb-2"><span class="text-xl mr-2">🛒</span><h3 class="text-sm font-bold text-red-800">Productos Agotados / Por Comprar (Stock 0)</h3></div>
                 <div id="out-of-stock-list" class="flex flex-wrap"></div>
             </div>
         </div>
 
+        <!-- 1. REGISTRO ENTREGA -->
         <div class="inventory-card max-w-4xl mx-auto p-4 md:p-8 rounded-xl mb-10">
             <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2">1. Entrada de Stock (Proveedor)</h2>
-            
             <div class="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
                 <h3 class="text-sm font-bold text-blue-600 mb-2">Opción Masiva (Excel/CSV)</h3>
                 <div class="flex gap-2">
@@ -88,7 +74,6 @@
                 </div>
                 <div id="import-message" class="text-center text-xs mt-2 hidden"></div>
             </div>
-
             <h3 class="text-sm font-bold text-gray-700 mb-2">Opción Manual</h3>
             <form id="delivery-form" class="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <div class="col-span-2 md:col-span-1">
@@ -114,12 +99,11 @@
             </form>
         </div>
 
+        <!-- 2. INVENTARIO ABIERTO -->
         <div class="inventory-card max-w-6xl mx-auto p-4 md:p-8 rounded-xl mb-10">
             <div class="flex flex-col sm:flex-row justify-between items-center mb-4 border-b pb-2 gap-2">
                 <h2 class="text-xl font-semibold text-gray-800">2. Inventario Abierto (En Barra)</h2>
-                <button id="close-all-pending-btn" class="btn-close-all text-white text-xs font-bold py-2 px-3 rounded flex items-center gap-1 shadow" title="Cerrar todo lo abierto asumiendo que está completo (0 ventas)">
-                    🔒 Cerrar Todo Intacto
-                </button>
+                <button id="close-all-pending-btn" class="btn-close-all text-white text-xs font-bold py-2 px-3 rounded flex items-center gap-1 shadow" title="Cerrar todo lo abierto asumiendo que está completo (0 ventas)">🔒 Cerrar Todo Intacto</button>
             </div>
 
             <div class="mb-6 p-3 border border-orange-200 rounded-lg bg-orange-50">
@@ -129,9 +113,11 @@
                     <select id="quick-entry-type" class="p-2 border rounded text-sm flex-grow">
                         <option value="" disabled selected>Seleccione ítem...</option>
                         <option value="Cervezas Devueltas" data-price="1000">Cervezas Devueltas ($1.000)</option>
-                        <option value="Shot Aguardiente" data-price="3500">Shot Aguardiente ($3.500)</option>
+                        <option value="Shot Aguardiente" data-price="3700">Shot Aguardiente ($3.700)</option>
                         <option value="Shot Whisky" data-price="4500">Shot Whisky ($4.500)</option>
                         <option value="Shot Tequila" data-price="7500">Shot Tequila ($7.500)</option>
+                        <option value="Shot de Ron" data-price="4500">Shot de Ron ($4.500)</option>
+                        <option value="Bonfiest" data-price="6000">Bonfiest ($6.000)</option>
                     </select>
                     <input type="number" id="quick-entry-count" class="p-2 border rounded text-sm w-24" placeholder="Cant." min="1">
                     <button type="submit" class="btn-returns text-white px-4 py-2 rounded font-bold text-sm">Registrar</button>
@@ -157,13 +143,12 @@
             </div>
         </div>
 
+        <!-- 3. HISTORIAL CERRADO -->
         <div class="inventory-card max-w-full mx-auto p-4 md:p-8 rounded-xl mb-10">
             <div class="flex flex-col xl:flex-row justify-between items-center mb-4 border-b pb-2 gap-2">
                 <h2 class="text-xl font-semibold text-gray-800">3. Reporte de Cierre</h2>
                 <div class="flex flex-wrap gap-2 justify-end">
-                    <button id="reload-leftovers-btn" class="btn-reload text-white text-xs font-bold py-2 px-3 rounded shadow flex items-center gap-1" title="Cargar sobrantes del reporte a la barra para mañana">
-                        📥 Cargar Sobrantes a Barra
-                    </button>
+                    <button id="reload-leftovers-btn" class="btn-reload text-white text-xs font-bold py-2 px-3 rounded shadow flex items-center gap-1" title="Cargar sobrantes del reporte a la barra para mañana">📥 Cargar Sobrantes a Barra</button>
                     <button id="reset-open-stock-btn" class="btn-reset text-white text-xs font-bold py-2 px-3 rounded">Reiniciar Stock</button>
                     <button id="reset-closed-history-btn" class="bg-red-700 text-white text-xs font-bold py-2 px-3 rounded hover:bg-red-800">Borrar Reporte</button>
                     <button id="export-btn" class="btn-export text-white text-xs font-bold py-2 px-3 rounded">Descargar Excel</button>
@@ -189,80 +174,54 @@
             </div>
         </div>
 
+        <!-- 4. CAJA -->
         <div class="inventory-card max-w-sm mx-auto p-4 rounded-xl">
             <h2 class="text-xl font-semibold mb-4 text-gray-800 border-b pb-2 text-center">4. Cuadre de Caja</h2>
             <div id="sync-status" class="text-center text-xs text-gray-400 mb-3">🔄 Sincronizando...</div>
             <div class="space-y-2 text-sm">
+                <div class="flex justify-between items-center"><label>Efectivo:</label><input type="number" id="cash-efectivo" class="input-cash w-32 calculate-cash-input" step="100"></div>
+                <div class="flex justify-between items-center"><label>Nequi:</label><input type="number" id="cash-nequi" class="input-cash w-32 calculate-cash-input" step="100"></div>
+                <div class="flex justify-between items-center"><label>Daviplata:</label><input type="number" id="cash-daviplata" class="input-cash w-32 calculate-cash-input" step="100"></div>
                 <div class="flex justify-between items-center">
-                    <label>Efectivo:</label>
-                    <input type="number" id="cash-efectivo" class="input-cash w-32 calculate-cash-input" step="100">
-                </div>
-                <div class="flex justify-between items-center">
-                    <label>Nequi:</label>
-                    <input type="number" id="cash-nequi" class="input-cash w-32 calculate-cash-input" step="100">
-                </div>
-                <div class="flex justify-between items-center">
-                    <label>Daviplata:</label>
-                    <input type="number" id="cash-daviplata" class="input-cash w-32 calculate-cash-input" step="100">
-                </div>
-                <div class="flex justify-between items-center">
-                    <label class="text-red-600 font-bold flex items-center gap-1">
-                        Deudas/Fiado:
-                    </label>
+                    <label class="text-red-600 font-bold flex items-center gap-1">Deudas/Fiado:</label>
                     <div class="flex gap-2">
                         <input type="text" id="cash-deudas" class="input-cash w-24 bg-gray-100 cursor-not-allowed font-bold text-red-600" readonly value="$ 0">
-                        <button id="manage-debtors-btn" class="bg-red-100 text-red-600 p-2 rounded hover:bg-red-200 text-xs font-bold border border-red-300" title="Gestionar Deudores">
-                            👥
-                        </button>
+                        <button id="manage-debtors-btn" class="bg-red-100 text-red-600 p-2 rounded hover:bg-red-200 text-xs font-bold border border-red-300">👥</button>
                     </div>
                 </div>
-
                 <div class="flex justify-between items-center border-b pb-2 mt-1">
-                    <label class="text-orange-600 font-bold flex items-center gap-1">
-                        Gastos:
-                    </label>
+                    <label class="text-orange-600 font-bold flex items-center gap-1">Gastos:</label>
                     <div class="flex gap-2">
                         <input type="text" id="cash-gastos" class="input-cash w-24 bg-gray-100 cursor-not-allowed font-bold text-orange-600" readonly value="$ 0">
-                        <button id="manage-expenses-btn" class="bg-orange-100 text-orange-600 p-2 rounded hover:bg-orange-200 text-xs font-bold border border-orange-300" title="Gestionar Gastos">
-                            🧾
-                        </button>
+                        <button id="manage-expenses-btn" class="bg-orange-100 text-orange-600 p-2 rounded hover:bg-orange-200 text-xs font-bold border border-orange-300">🧾</button>
                     </div>
                 </div>
-                
-                <div class="flex justify-between items-center pt-2">
-                    <span class="font-bold text-purple-700">VENTA ESPERADA:</span>
-                    <span id="gross-sales-expected" class="font-mono font-bold">0</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="font-bold text-blue-600">GANANCIA NETA:</span>
-                    <span id="sales-expected" class="font-mono font-bold">0</span>
-                </div>
-                <div class="flex justify-between items-center pt-2 border-t">
-                    <span class="font-bold text-green-700">TOTAL EN CAJA:</span>
-                    <span id="cash-total" class="font-mono font-bold text-lg">0</span>
-                </div>
-                <div class="flex justify-between items-center pt-2 border-t">
-                    <span class="font-extrabold text-gray-900 text-lg">BALANCE:</span>
-                    <span id="cash-balance" class="font-mono font-extrabold text-xl">0</span>
-                </div>
+                <div class="flex justify-between items-center pt-2"><span class="font-bold text-purple-700">VENTA ESPERADA:</span><span id="gross-sales-expected" class="font-mono font-bold">0</span></div>
+                <div class="flex justify-between items-center"><span class="font-bold text-blue-600">GANANCIA NETA:</span><span id="sales-expected" class="font-mono font-bold">0</span></div>
+                <div class="flex justify-between items-center pt-2 border-t"><span class="font-bold text-green-700">TOTAL EN CAJA:</span><span id="cash-total" class="font-mono font-bold text-lg">0</span></div>
+                <div class="flex justify-between items-center pt-2 border-t"><span class="font-extrabold text-gray-900 text-lg">BALANCE:</span><span id="cash-balance" class="font-mono font-extrabold text-xl">0</span></div>
             </div>
         </div>
+
+        <!-- 5. NOTAS DE TURNO (NUEVO) -->
+        <div class="inventory-card max-w-sm mx-auto p-4 rounded-xl mt-6 mb-10">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800 border-b pb-2 text-center">📝 Notas de Turno</h2>
+            <p class="text-xs text-gray-500 mb-2 text-center">Anota existencias de cigarrillos, préstamos o entregas para el siguiente turno.</p>
+            <textarea id="shift-notes" class="w-full p-3 border border-gray-300 rounded text-sm bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-yellow-400" rows="3" placeholder="Ej: Quedan 10 cigarrillos rojos, se prestó encendedor..."></textarea>
+            <div id="notes-sync-status" class="text-right text-xs text-gray-400 mt-1 font-bold">✅ Sincronizado</div>
+        </div>
+
     </div>
 
+    <!-- MODALES -->
     <div id="close-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
         <div class="modal-content bg-white p-6 rounded-lg shadow-xl w-80">
             <h3 class="text-lg font-bold mb-2">Cerrar Item</h3>
             <p class="text-sm text-gray-600 mb-4">Producto: <span id="modal-item-name" class="font-bold"></span> <br> Entrada: <span id="modal-received-count"></span></p>
             <form id="close-form">
                 <input type="hidden" id="modal-doc-id">
-                <div class="mb-4">
-                    <label class="text-xs font-bold text-gray-500">Sobran (Stock Final)</label>
-                    <input type="number" id="units-remaining-input" required min="0" class="w-full p-2 border rounded">
-                </div>
-                <div class="flex justify-end gap-2">
-                    <button type="button" id="cancel-close" class="px-3 py-1 bg-gray-200 rounded text-sm">Cancelar</button>
-                    <button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-sm font-bold">Confirmar</button>
-                </div>
+                <div class="mb-4"><label class="text-xs font-bold text-gray-500">Sobran (Stock Final)</label><input type="number" id="units-remaining-input" required min="0" class="w-full p-2 border rounded"></div>
+                <div class="flex justify-end gap-2"><button type="button" id="cancel-close" class="px-3 py-1 bg-gray-200 rounded text-sm">Cancelar</button><button type="submit" class="px-3 py-1 bg-blue-600 text-white rounded text-sm font-bold">Confirmar</button></div>
                 <div id="close-modal-message" class="text-center text-xs mt-2 text-red-500 hidden"></div>
             </form>
         </div>
@@ -270,83 +229,31 @@
 
     <div id="history-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
         <div class="modal-content bg-white p-4 rounded-lg shadow-xl w-full max-w-md h-3/4 flex flex-col">
-            <div class="flex justify-between items-center border-b pb-2 mb-2">
-                <h3 class="font-bold">Historial de Movimientos</h3>
-                <button id="close-history-modal" class="text-2xl">&times;</button>
-            </div>
+            <div class="flex justify-between items-center border-b pb-2 mb-2"><h3 class="font-bold">Historial de Movimientos</h3><button id="close-history-modal" class="text-2xl">&times;</button></div>
             <div id="history-list" class="history-container flex-grow bg-gray-50 p-2 rounded overflow-y-auto"></div>
-            <div class="mt-2 text-right">
-                <button id="clear-history-btn" class="text-xs text-red-600 underline">Borrar todo el historial</button>
-            </div>
+            <div class="mt-2 text-right"><button id="clear-history-btn" class="text-xs text-red-600 underline">Borrar todo el historial</button></div>
         </div>
     </div>
 
     <div id="debtors-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
         <div class="modal-content bg-white p-4 rounded-lg shadow-xl w-full max-w-md h-3/4 flex flex-col">
-            <div class="flex justify-between items-center border-b pb-2 mb-2">
-                <h3 class="font-bold text-red-600">Gestión de Deudores (Fiados)</h3>
-                <button id="close-debtors-modal" class="text-2xl">&times;</button>
-            </div>
-            
-            <form id="debtor-form" class="flex gap-2 mb-4 bg-gray-50 p-2 rounded border">
-                <input type="text" id="debtor-name" placeholder="Nombre" required class="flex-grow p-2 border rounded text-sm">
-                <input type="number" id="debtor-amount" placeholder="Monto" required min="50" step="50" class="w-24 p-2 border rounded text-sm">
-                <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded font-bold text-sm hover:bg-red-700">+</button>
-            </form>
-
-            <div class="flex-grow overflow-y-auto mb-2">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Nombre</th>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500">Monto</th>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="debtors-list" class="bg-white divide-y divide-gray-200"></tbody>
-                </table>
-            </div>
-            
-            <div class="border-t pt-2 flex justify-between items-center">
-                <span class="text-sm font-bold text-gray-600">Total Fiado:</span>
-                <span id="debtors-total-modal" class="text-lg font-bold text-red-600">$ 0</span>
-            </div>
+            <div class="flex justify-between items-center border-b pb-2 mb-2"><h3 class="font-bold text-red-600">Gestión de Deudores (Fiados)</h3><button id="close-debtors-modal" class="text-2xl">&times;</button></div>
+            <form id="debtor-form" class="flex gap-2 mb-4 bg-gray-50 p-2 rounded border"><input type="text" id="debtor-name" placeholder="Nombre" required class="flex-grow p-2 border rounded text-sm"><input type="number" id="debtor-amount" placeholder="Monto" required min="50" step="50" class="w-24 p-2 border rounded text-sm"><button type="submit" class="bg-red-600 text-white px-3 py-1 rounded font-bold text-sm hover:bg-red-700">+</button></form>
+            <div class="flex-grow overflow-y-auto mb-2"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-100"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Nombre</th><th class="px-3 py-2 text-right text-xs font-medium text-gray-500">Monto</th><th class="px-3 py-2 text-right text-xs font-medium text-gray-500"></th></tr></thead><tbody id="debtors-list" class="bg-white divide-y divide-gray-200"></tbody></table></div>
+            <div class="border-t pt-2 flex justify-between items-center"><span class="text-sm font-bold text-gray-600">Total Fiado:</span><span id="debtors-total-modal" class="text-lg font-bold text-red-600">$ 0</span></div>
         </div>
     </div>
 
     <div id="expenses-modal" class="modal fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none">
         <div class="modal-content bg-white p-4 rounded-lg shadow-xl w-full max-w-md h-3/4 flex flex-col">
-            <div class="flex justify-between items-center border-b pb-2 mb-2">
-                <h3 class="font-bold text-orange-600">Gestión de Gastos (Caja Menor)</h3>
-                <button id="close-expenses-modal" class="text-2xl">&times;</button>
-            </div>
-            
-            <form id="expense-form" class="flex gap-2 mb-4 bg-gray-50 p-2 rounded border">
-                <input type="text" id="expense-concept" placeholder="Concepto (ej: Hielo)" required class="flex-grow p-2 border rounded text-sm">
-                <input type="number" id="expense-amount" placeholder="Monto" required min="50" step="50" class="w-24 p-2 border rounded text-sm">
-                <button type="submit" class="bg-orange-600 text-white px-3 py-1 rounded font-bold text-sm hover:bg-orange-700">+</button>
-            </form>
-
-            <div class="flex-grow overflow-y-auto mb-2">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Concepto</th>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500">Monto</th>
-                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="expenses-list" class="bg-white divide-y divide-gray-200"></tbody>
-                </table>
-            </div>
-            
-            <div class="border-t pt-2 flex justify-between items-center">
-                <span class="text-sm font-bold text-gray-600">Total Gastos:</span>
-                <span id="expenses-total-modal" class="text-lg font-bold text-orange-600">$ 0</span>
-            </div>
+            <div class="flex justify-between items-center border-b pb-2 mb-2"><h3 class="font-bold text-orange-600">Gestión de Gastos (Caja Menor)</h3><button id="close-expenses-modal" class="text-2xl">&times;</button></div>
+            <form id="expense-form" class="flex gap-2 mb-4 bg-gray-50 p-2 rounded border"><input type="text" id="expense-concept" placeholder="Concepto (ej: Hielo)" required class="flex-grow p-2 border rounded text-sm"><input type="number" id="expense-amount" placeholder="Monto" required min="50" step="50" class="w-24 p-2 border rounded text-sm"><button type="submit" class="bg-orange-600 text-white px-3 py-1 rounded font-bold text-sm hover:bg-orange-700">+</button></form>
+            <div class="flex-grow overflow-y-auto mb-2"><table class="min-w-full divide-y divide-gray-200"><thead class="bg-gray-100"><tr><th class="px-3 py-2 text-left text-xs font-medium text-gray-500">Concepto</th><th class="px-3 py-2 text-right text-xs font-medium text-gray-500">Monto</th><th class="px-3 py-2 text-right text-xs font-medium text-gray-500"></th></tr></thead><tbody id="expenses-list" class="bg-white divide-y divide-gray-200"></tbody></table></div>
+            <div class="border-t pt-2 flex justify-between items-center"><span class="text-sm font-bold text-gray-600">Total Gastos:</span><span id="expenses-total-modal" class="text-lg font-bold text-orange-600">$ 0</span></div>
         </div>
     </div>
 
+    <!-- SCRIPT -->
     <script type="module">
         if (window.location.protocol === 'file:') document.getElementById('local-warning').style.display = 'block';
 
@@ -354,7 +261,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, onSnapshot, doc, deleteDoc, updateDoc, where, getDoc, getDocs, setDoc, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CONFIGURACIÓN REAL PARA NETLIFY
         const firebaseConfig = {
             apiKey: "AIzaSyB-UuyKjp6XY4Tp-nwJC_IWq73GuPoiIoo",
             authDomain: "control-inventarios-3b8ac.firebaseapp.com",
@@ -369,45 +275,47 @@
             { name: "Whiskey Botella", sale: 75000, cost: 55600 },
             { name: "Whiskey 1/2", sale: 40000, cost: 28000 },
             { name: "Whiskey 1/4", sale: 55000, cost: 40000 },
-            { name: "Smirnoff Botella", sale: 70000, cost: 43200 },
+            { name: "Smirnoff Botella", sale: 70000, cost: 44000 },
             { name: "Smirnoff 1/2", sale: 40000, cost: 23700 },
             { name: "Ron 1/2", sale: 42000, cost: 27400 },
             { name: "Nectar Botella", sale: 62000, cost: 41600 },
             { name: "Nectar 1/2", sale: 34000, cost: 22000 },
             { name: "Antioqueño Azul", sale: 40000, cost: 27400 },
-            { name: "Antioqueño Verde", sale: 36000, cost: 23200 },
-            { name: "Amarillo Botella", sale: 73000, cost: 48100 },
-            { name: "Amarillo 1/2", sale: 43000, cost: 25400 },
+            { name: "Antioqueño Verde", sale: 38000, cost: 23200 },
+            { name: "Amarillo Botella", sale: 75000, cost: 48100 },
+            { name: "Amarillo 1/2", sale: 45000, cost: 25400 },
             { name: "Tequila", sale: 75000, cost: 56000 },
             { name: "Bacardi", sale: 75000, cost: 48000 },
             { name: "Like", sale: 6000, cost: 4200 },
             { name: "Smirnoff Ice", sale: 10000, cost: 6500 },
             { name: "Cuates", sale: 6000, cost: 4200 },
-            { name: "Corona", sale: 6000, cost: 3700 },
-            { name: "Coronita", sale: 4000, cost: 2850 },
-            { name: "Budwaiser", sale: 3300, cost: 2350 },
-            { name: "Pony Malta", sale: 3300, cost: 1700 },
-            { name: "Hit", sale: 3300, cost: 2950 },
-            { name: "Sporade", sale: 3300, cost: 2250 },
+            { name: "Corona", sale: 6000, cost: 3800 },
+            { name: "Coronita", sale: 4000, cost: 2950 },
+            { name: "Budwaiser", sale: 3500, cost: 2450 },
+            { name: "Pony Malta", sale: 3500, cost: 2200 },
+            { name: "Hit", sale: 3500, cost: 2300 },
+            { name: "Sporade", sale: 3500, cost: 2300 },
             { name: "Electrolit", sale: 10000, cost: 8000 },
             { name: "Agua", sale: 2500, cost: 1200 },
-            { name: "Cocacola", sale: 3300, cost: 2200 },
+            { name: "Cocacola", sale: 4000, cost: 2500 },
             { name: "Club", sale: 4000, cost: 2900 },
             { name: "Reds", sale: 4500, cost: 2900 },
             { name: "Costeña Negra", sale: 3000, cost: 1550 },
-            { name: "Costeña Verde", sale: 3000, cost: 1800 },
-            { name: "Light", sale: 3500, cost: 2300 },
-            { name: "Aguila", sale: 3300, cost: 2250 },
-            { name: "Poker", sale: 3300, cost: 2150 },
-            { name: "Doritos", sale: 3200, cost: 1600 },
-            { name: "Papas", sale: 3200, cost: 2000 },
+            { name: "Costeña Verde", sale: 3000, cost: 1950 },
+            { name: "Light", sale: 3700, cost: 2300 },
+            { name: "Aguila", sale: 3500, cost: 2250 },
+            { name: "Poker", sale: 3500, cost: 2250 },
+            { name: "Doritos", sale: 3500, cost: 1800 },
+            { name: "Papas", sale: 3500, cost: 2200 },
             { name: "Detodtito", sale: 3700, cost: 2400 },
             { name: "Todorico", sale: 3700, cost: 1725 },
             { name: "Latas", sale: 4000, cost: 2750 },
+            { name: "Bonfiest", sale: 6000, cost: 4500 },
             { name: "Cervezas Devueltas", sale: 1000, cost: 0 },
-            { name: "Shot Aguardiente", sale: 3500, cost: 2200 },
+            { name: "Shot Aguardiente", sale: 3700, cost: 2200 },
             { name: "Shot Whisky", sale: 4500, cost: 3000 },
-            { name: "Shot Tequila", sale: 7500, cost: 5000 }
+            { name: "Shot Tequila", sale: 7500, cost: 5000 },
+            { name: "Shot de Ron", sale: 4500, cost: 3000 }
         ];
 
         const EXPORT_ORDER = [
@@ -418,11 +326,11 @@
             "Corona", "Coronita", "Budwaiser", "Pony Malta", "Hit", 
             "Sporade", "Electrolit", "Agua", "Cocacola", "Club", "Reds", 
             "Costeña Negra", "Costeña Verde", "Light", "Aguila", "Poker", 
-            "Doritos", "Papas", "Detodtito", "Todorico", "Latas"
+            "Doritos", "Papas", "Detodtito", "Todorico", "Latas", "Bonfiest"
         ];
 
         const APP_ID_FIXED = 'sanchez-bar-live';
-        const SERVICE_ITEMS = ["Cervezas Devueltas", "Shot Aguardiente", "Shot Whisky", "Shot Tequila"];
+        const SERVICE_ITEMS = ["Cervezas Devueltas", "Shot Aguardiente", "Shot Whisky", "Shot Tequila", "Shot de Ron", "Bonfiest"];
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -430,63 +338,22 @@
         let userId = null, closedData = [], openData = [], debtorsData = [], expensesData = [];
 
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                userId = user.uid;
-                document.getElementById('user-info').textContent = `🟢 Conectado: ${userId.slice(0,5)}`;
-                initListeners();
-            } else {
-                signInAnonymously(auth).catch(err => {
-                    console.error("Error Auth:", err);
-                    document.getElementById('user-info').textContent = `🔴 Error: ${err.message}`;
-                });
-            }
+            if (user) { userId = user.uid; document.getElementById('user-info').textContent = `🟢 Conectado: ${userId.slice(0,5)}`; initListeners(); } 
+            else { signInAnonymously(auth).catch(err => document.getElementById('user-info').textContent = `🔴 Error`); }
         });
 
         const COL_INVENTORY = `inv_${APP_ID_FIXED}`;
         const COL_LOGS = `logs_${APP_ID_FIXED}`;
         const COL_CASH = `cash_${APP_ID_FIXED}`;
         const COL_DEBTORS = `debtors_${APP_ID_FIXED}`;
-        const COL_EXPENSES = `expenses_${APP_ID_FIXED}`; // NUEVO
+        const COL_EXPENSES = `expenses_${APP_ID_FIXED}`;
         const DOC_CASH = 'status';
 
         const els = {
-            deliveryForm: document.getElementById('delivery-form'),
-            itemSelect: document.getElementById('delivery-item-name'),
-            saleIn: document.getElementById('sale-price'),
-            costIn: document.getElementById('unit-cost'),
-            openList: document.getElementById('open-inventory-list'),
-            closedList: document.getElementById('closed-inventory-list'),
-            outStockList: document.getElementById('out-of-stock-list'),
-            outStockCont: document.getElementById('out-of-stock-container'),
-            quickForm: document.getElementById('quick-entry-form'),
-            quickType: document.getElementById('quick-entry-type'),
-            quickCount: document.getElementById('quick-entry-count'),
-            quickMsg: document.getElementById('quick-entry-message'),
-            cashIn: { 
-                efectivo: document.getElementById('cash-efectivo'), 
-                nequi: document.getElementById('cash-nequi'), 
-                daviplata: document.getElementById('cash-daviplata'), 
-                deudas: document.getElementById('cash-deudas'),
-                gastos: document.getElementById('cash-gastos') // NUEVO
-            },
-            syncStatus: document.getElementById('sync-status'),
-            val: { expected: document.getElementById('gross-sales-expected'), profit: document.getElementById('sales-expected'), total: document.getElementById('cash-total'), balance: document.getElementById('cash-balance') },
-            modal: { self: document.getElementById('close-modal'), mForm: document.getElementById('close-form'), mId: document.getElementById('modal-doc-id'), mRem: document.getElementById('units-remaining-input'), mName: document.getElementById('modal-item-name'), mRecv: document.getElementById('modal-received-count'), mCancel: document.getElementById('cancel-close'), msg: document.getElementById('close-modal-message') },
-            hist: { modal: document.getElementById('history-modal'), list: document.getElementById('history-list'), btn: document.getElementById('open-history-btn'), close: document.getElementById('close-history-modal'), clear: document.getElementById('clear-history-btn') },
-            btns: { 
-                resetOpen: document.getElementById('reset-open-stock-btn'), 
-                resetClosed: document.getElementById('reset-closed-history-btn'), 
-                export: document.getElementById('export-btn'),
-                reloadLeftovers: document.getElementById('reload-leftovers-btn'),
-                closePending: document.getElementById('close-all-pending-btn')
-            },
-            imp: { btn: document.getElementById('import-csv-btn'), input: document.getElementById('csv-file-input'), msg: document.getElementById('import-message') },
-            delMsg: document.getElementById('delivery-form-message'),
-            
-            debt: { btn: document.getElementById('manage-debtors-btn'), modal: document.getElementById('debtors-modal'), close: document.getElementById('close-debtors-modal'), form: document.getElementById('debtor-form'), name: document.getElementById('debtor-name'), amt: document.getElementById('debtor-amount'), list: document.getElementById('debtors-list'), totalModal: document.getElementById('debtors-total-modal') },
-            
-            // NUEVO: Referencias Gastos
-            expense: { btn: document.getElementById('manage-expenses-btn'), modal: document.getElementById('expenses-modal'), close: document.getElementById('close-expenses-modal'), form: document.getElementById('expense-form'), concept: document.getElementById('expense-concept'), amt: document.getElementById('expense-amount'), list: document.getElementById('expenses-list'), totalModal: document.getElementById('expenses-total-modal') }
+            deliveryForm: document.getElementById('delivery-form'), itemSelect: document.getElementById('delivery-item-name'), saleIn: document.getElementById('sale-price'), costIn: document.getElementById('unit-cost'), openList: document.getElementById('open-inventory-list'), closedList: document.getElementById('closed-inventory-list'), outStockList: document.getElementById('out-of-stock-list'), outStockCont: document.getElementById('out-of-stock-container'), quickForm: document.getElementById('quick-entry-form'), quickType: document.getElementById('quick-entry-type'), quickCount: document.getElementById('quick-entry-count'), quickMsg: document.getElementById('quick-entry-message'), 
+            cashIn: { efectivo: document.getElementById('cash-efectivo'), nequi: document.getElementById('cash-nequi'), daviplata: document.getElementById('cash-daviplata'), deudas: document.getElementById('cash-deudas'), gastos: document.getElementById('cash-gastos') }, 
+            notes: { area: document.getElementById('shift-notes'), sync: document.getElementById('notes-sync-status') }, 
+            syncStatus: document.getElementById('sync-status'), val: { expected: document.getElementById('gross-sales-expected'), profit: document.getElementById('sales-expected'), total: document.getElementById('cash-total'), balance: document.getElementById('cash-balance') }, modal: { self: document.getElementById('close-modal'), mForm: document.getElementById('close-form'), mId: document.getElementById('modal-doc-id'), mRem: document.getElementById('units-remaining-input'), mName: document.getElementById('modal-item-name'), mRecv: document.getElementById('modal-received-count'), mCancel: document.getElementById('cancel-close'), msg: document.getElementById('close-modal-message') }, hist: { modal: document.getElementById('history-modal'), list: document.getElementById('history-list'), btn: document.getElementById('open-history-btn'), close: document.getElementById('close-history-modal'), clear: document.getElementById('clear-history-btn') }, btns: { resetOpen: document.getElementById('reset-open-stock-btn'), resetClosed: document.getElementById('reset-closed-history-btn'), export: document.getElementById('export-btn'), reloadLeftovers: document.getElementById('reload-leftovers-btn'), closePending: document.getElementById('close-all-pending-btn') }, imp: { btn: document.getElementById('import-csv-btn'), input: document.getElementById('csv-file-input'), msg: document.getElementById('import-message') }, delMsg: document.getElementById('delivery-form-message'), debt: { btn: document.getElementById('manage-debtors-btn'), modal: document.getElementById('debtors-modal'), close: document.getElementById('close-debtors-modal'), form: document.getElementById('debtor-form'), name: document.getElementById('debtor-name'), amt: document.getElementById('debtor-amount'), list: document.getElementById('debtors-list'), totalModal: document.getElementById('debtors-total-modal') }, expense: { btn: document.getElementById('manage-expenses-btn'), modal: document.getElementById('expenses-modal'), close: document.getElementById('close-expenses-modal'), form: document.getElementById('expense-form'), concept: document.getElementById('expense-concept'), amt: document.getElementById('expense-amount'), list: document.getElementById('expenses-list'), totalModal: document.getElementById('expenses-total-modal') }
         };
 
         const fmtMoney = (n) => (parseFloat(n)||0).toLocaleString('es-CO', {style:'currency', currency:'COP', minimumFractionDigits:0});
@@ -495,14 +362,8 @@
 
         function initListeners() {
             els.itemSelect.innerHTML = '<option value="" disabled selected>Seleccionar...</option>';
-            PRODUCT_DATA.forEach(p => {
-                if(!SERVICE_ITEMS.includes(p.name)) {
-                    const opt = document.createElement('option'); opt.value = p.name; opt.textContent = p.name;
-                    els.itemSelect.appendChild(opt);
-                }
-            });
+            PRODUCT_DATA.forEach(p => { if(!SERVICE_ITEMS.includes(p.name)) { const opt = document.createElement('option'); opt.value = p.name; opt.textContent = p.name; els.itemSelect.appendChild(opt); } });
 
-            // 1. INVENTARIO
             onSnapshot(query(collection(db, COL_INVENTORY)), (snap) => {
                 openData = []; closedData = [];
                 snap.forEach(doc => {
@@ -512,622 +373,275 @@
                 });
                 openData.sort((a,b) => (b.dateOpened||0) - (a.dateOpened||0));
                 closedData.sort((a,b) => (b.dateClosed||0) - (a.dateClosed||0));
-                renderTables();
-                calcBalance();
-                checkStock();
+                renderTables(); calcBalance(); checkStock();
             });
 
-            // 2. CAJA (Solo efectivo/bancos)
             onSnapshot(doc(db, COL_CASH, DOC_CASH), (snap) => {
                 if(snap.exists()) {
                     const d = snap.data();
                     if(document.activeElement !== els.cashIn.efectivo) els.cashIn.efectivo.value = d.efectivo || 0;
                     if(document.activeElement !== els.cashIn.nequi) els.cashIn.nequi.value = d.nequi || 0;
                     if(document.activeElement !== els.cashIn.daviplata) els.cashIn.daviplata.value = d.daviplata || 0;
-                    calcBalance();
-                    els.syncStatus.textContent = '✅ Sincronizado';
-                    els.syncStatus.className = 'text-center text-xs text-green-500 mb-3';
-                } else {
-                    setDoc(doc(db, COL_CASH, DOC_CASH), {efectivo:0, nequi:0, daviplata:0, deudas:0});
-                }
+                    if(document.activeElement !== els.notes.area) els.notes.area.value = d.notes || ''; // Cargar notas
+                    calcBalance(); els.syncStatus.textContent = '✅ Sincronizado'; els.syncStatus.className = 'text-center text-xs text-green-500 mb-3';
+                } else { setDoc(doc(db, COL_CASH, DOC_CASH), {efectivo:0, nequi:0, daviplata:0, deudas:0, notes:""}); }
             });
 
-            // 3. DEUDORES
-            onSnapshot(query(collection(db, COL_DEBTORS)), (snap) => {
-                debtorsData = [];
-                let totalDeudas = 0;
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    debtorsData.push({ id: doc.id, ...d });
-                    totalDeudas += (parseInt(d.amount) || 0);
-                });
-                els.cashIn.deudas.value = fmtMoney(totalDeudas);
-                els.cashIn.deudas.setAttribute('data-val', totalDeudas);
-                renderDebtors();
-                calcBalance();
-            });
-
-            // 4. GASTOS (NUEVO)
-            onSnapshot(query(collection(db, COL_EXPENSES)), (snap) => {
-                expensesData = [];
-                let totalGastos = 0;
-                snap.forEach(doc => {
-                    const d = doc.data();
-                    expensesData.push({ id: doc.id, ...d });
-                    totalGastos += (parseInt(d.amount) || 0);
-                });
-                els.cashIn.gastos.value = fmtMoney(totalGastos);
-                els.cashIn.gastos.setAttribute('data-val', totalGastos);
-                renderExpenses();
-                calcBalance();
-            });
+            onSnapshot(query(collection(db, COL_DEBTORS)), (snap) => { debtorsData = []; let t = 0; snap.forEach(doc => { const d = doc.data(); debtorsData.push({ id: doc.id, ...d }); t += (parseInt(d.amount) || 0); }); els.cashIn.deudas.value = fmtMoney(t); els.cashIn.deudas.setAttribute('data-val', t); renderDebtors(); calcBalance(); });
+            onSnapshot(query(collection(db, COL_EXPENSES)), (snap) => { expensesData = []; let t = 0; snap.forEach(doc => { const d = doc.data(); expensesData.push({ id: doc.id, ...d }); t += (parseInt(d.amount) || 0); }); els.cashIn.gastos.value = fmtMoney(t); els.cashIn.gastos.setAttribute('data-val', t); renderExpenses(); calcBalance(); });
         }
 
-        function renderDebtors() {
-            els.debt.list.innerHTML = '';
-            let total = 0;
-            debtorsData.forEach(d => {
-                const tr = document.createElement('tr');
-                tr.className = "debtor-item border-b";
-                tr.innerHTML = `
-                    <td class="px-3 py-2 text-sm text-gray-700">${d.name}</td>
-                    <td class="px-3 py-2 text-right text-sm font-bold text-gray-700">${fmtMoney(d.amount)}</td>
-                    <td class="px-3 py-2 text-right">
-                        <button class="text-red-500 hover:text-red-700 text-xs font-bold" onclick="deleteDebtor('${d.id}', '${d.name}')">❌</button>
-                    </td>
-                `;
-                els.debt.list.appendChild(tr);
-                total += parseInt(d.amount);
-            });
-            els.debt.totalModal.textContent = fmtMoney(total);
-        }
+        function renderDebtors() { els.debt.list.innerHTML = ''; let t = 0; debtorsData.forEach(d => { els.debt.list.innerHTML += `<tr class="border-b"><td class="px-3 py-2 text-sm">${d.name}</td><td class="px-3 py-2 text-right text-sm font-bold">${fmtMoney(d.amount)}</td><td class="px-3 py-2 text-right"><button class="text-red-500" onclick="deleteDebtor('${d.id}','${d.name}')">❌</button></td></tr>`; t += parseInt(d.amount); }); els.debt.totalModal.textContent = fmtMoney(t); }
+        function renderExpenses() { els.expense.list.innerHTML = ''; let t = 0; expensesData.forEach(e => { els.expense.list.innerHTML += `<tr class="border-b"><td class="px-3 py-2 text-sm">${e.concept}</td><td class="px-3 py-2 text-right text-sm font-bold">${fmtMoney(e.amount)}</td><td class="px-3 py-2 text-right"><button class="text-red-500" onclick="deleteExpense('${e.id}','${e.concept}')">❌</button></td></tr>`; t += parseInt(e.amount); }); els.expense.totalModal.textContent = fmtMoney(t); }
 
-        // NUEVO: Renderizar Gastos
-        function renderExpenses() {
-            els.expense.list.innerHTML = '';
-            let total = 0;
-            expensesData.forEach(e => {
-                const tr = document.createElement('tr');
-                tr.className = "debtor-item border-b hover:bg-orange-50";
-                tr.innerHTML = `
-                    <td class="px-3 py-2 text-sm text-gray-700">${e.concept}</td>
-                    <td class="px-3 py-2 text-right text-sm font-bold text-gray-700">${fmtMoney(e.amount)}</td>
-                    <td class="px-3 py-2 text-right">
-                        <button class="text-red-500 hover:text-red-700 text-xs font-bold" onclick="deleteExpense('${e.id}', '${e.concept}')">❌</button>
-                    </td>
-                `;
-                els.expense.list.appendChild(tr);
-                total += parseInt(e.amount);
-            });
-            els.expense.totalModal.textContent = fmtMoney(total);
-        }
+        function isItemClosed(itemName) { return closedData.some(i => i.itemName === itemName); }
 
         function renderTables() {
             els.openList.innerHTML = '';
             if(!openData.length) els.openList.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-xs text-gray-400">Sin pendientes</td></tr>';
             openData.forEach((i, idx) => {
                 if(SERVICE_ITEMS.includes(i.itemName)) return;
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-blue-50 border-b";
-                tr.innerHTML = `
-                    <td class="px-3 py-2 text-xs text-gray-400">${idx+1}</td>
-                    <td class="px-3 py-2 text-sm font-medium">${i.itemName}</td>
-                    <td class="px-3 py-2 text-sm font-bold text-gray-700">${i.received}</td>
-                    <td class="px-3 py-2 text-xs text-gray-500">${fmtDate(i.dateOpened)}</td>
-                    <td class="px-3 py-2 text-right">
-                        <button class="text-red-500 hover:text-red-700 mr-2" onclick="delItem('${i.id}')">🗑️</button>
-                        <button class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold" 
-                            onclick="prepClose('${i.id}','${i.itemName}',${i.received},${i.salePrice},${i.unitCost})">Cerrar</button>
-                    </td>
-                `;
-                els.openList.appendChild(tr);
+                
+                // VALIDACIÓN: Si está en cerrados, se oculta el botón "Cerrar" para no duplicar.
+                let actionButtons = `<button class="text-red-500 hover:text-red-700 mr-2" onclick="delItem('${i.id}')">🗑️</button>`;
+                if (isItemClosed(i.itemName)) {
+                    actionButtons += `<span class="text-xs text-red-500 font-bold ml-2">⚠ Borrar reporte previo</span>`;
+                } else {
+                    actionButtons += `<button class="bg-blue-600 text-white px-2 py-1 rounded text-xs font-bold" onclick="prepClose('${i.id}','${i.itemName}',${i.received},${i.salePrice},${i.unitCost})">Cerrar</button>`;
+                }
+
+                els.openList.innerHTML += `<tr class="hover:bg-blue-50 border-b"><td class="px-3 py-2 text-xs text-gray-400">${idx+1}</td><td class="px-3 py-2 text-sm font-medium">${i.itemName}</td><td class="px-3 py-2 text-sm font-bold text-gray-700">${i.received}</td><td class="px-3 py-2 text-xs text-gray-500">${fmtDate(i.dateOpened)}</td><td class="px-3 py-2 text-right">${actionButtons}</td></tr>`;
             });
 
             els.closedList.innerHTML = '';
             if(!closedData.length) els.closedList.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-xs text-gray-400">Sin registros</td></tr>';
             closedData.forEach((i, idx) => {
-                let color = 'text-gray-800';
-                if(SERVICE_ITEMS.includes(i.itemName)) color = 'text-purple-600 font-bold';
-                else if(i.usage > 0) color = 'text-green-600 font-bold';
-                
-                const restoreBtn = SERVICE_ITEMS.includes(i.itemName) ? '' : 
-                    `<button class="text-blue-500 hover:text-blue-700 mr-2 text-lg" onclick="restoreItem('${i.id}')" title="Reabrir">🔄</button>`;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-gray-50 border-b";
-                tr.innerHTML = `
-                    <td class="px-2 py-2 text-xs text-gray-400">${idx + 1}</td>
-                    <td class="px-2 py-2 text-xs font-medium">${i.itemName}</td>
-                    <td class="px-2 py-2 text-xs text-center text-gray-500">${i.received}</td>
-                    <td class="px-2 py-2 text-xs text-center text-gray-500">${i.remaining}</td>
-                    <td class="px-2 py-2 text-xs text-center ${color}">${i.usage}</td>
-                    <td class="px-2 py-2 text-xs text-right text-gray-500">${fmtMoney(i.salePrice)}</td>
-                    <td class="px-2 py-2 text-xs text-right text-blue-600 font-bold">${fmtMoney(i.grossProfit)}</td>
-                    <td class="px-2 py-2 text-right">
-                        ${restoreBtn}
-                        <button class="text-red-500 hover:text-red-700 text-lg" onclick="delItem('${i.id}')" title="Borrar Definitivamente">🗑️</button>
-                    </td>
-                `;
-                els.closedList.appendChild(tr);
+                let c = SERVICE_ITEMS.includes(i.itemName) ? 'text-purple-600 font-bold' : (i.usage > 0 ? 'text-green-600 font-bold' : 'text-gray-800');
+                const rBtn = SERVICE_ITEMS.includes(i.itemName) ? '' : `<button class="text-blue-500 hover:text-blue-700 mr-2 text-lg" onclick="restoreItem('${i.id}')" title="Reabrir">🔄</button>`;
+                els.closedList.innerHTML += `<tr class="hover:bg-gray-50 border-b"><td class="px-2 py-2 text-xs text-gray-400">${idx+1}</td><td class="px-2 py-2 text-xs font-medium">${i.itemName}</td><td class="px-2 py-2 text-xs text-center text-gray-500">${i.received}</td><td class="px-2 py-2 text-xs text-center text-gray-500">${i.remaining}</td><td class="px-2 py-2 text-xs text-center ${c}">${i.usage}</td><td class="px-2 py-2 text-xs text-right text-gray-500">${fmtMoney(i.salePrice)}</td><td class="px-2 py-2 text-xs text-right text-blue-600 font-bold">${fmtMoney(i.grossProfit)}</td><td class="px-2 py-2 text-right">${rBtn}<button class="text-red-500 hover:text-red-700 text-lg" onclick="delItem('${i.id}')" title="Borrar">🗑️</button></td></tr>`;
             });
         }
 
-        // --- CORRECCIÓN LÓGICA AGOTADOS ---
         function checkStock() {
-            // Un producto NO está agotado si:
-            // 1. Está abierto.
-            // 2. O está cerrado con sobras > 0.
-            const hasStock = new Set();
-
-            openData.forEach(i => hasStock.add(i.itemName));
-            
-            closedData.forEach(i => {
-                if (i.remaining > 0) {
-                    hasStock.add(i.itemName);
-                }
-            });
-
-            els.outStockList.innerHTML = '';
-            let c = 0;
-            PRODUCT_DATA.forEach(p => {
-                if(SERVICE_ITEMS.includes(p.name)) return;
-                
-                // Si no está en la lista de "Con Stock", entonces está Agotado
-                if(!hasStock.has(p.name)) {
-                    const sp = document.createElement('span'); 
-                    sp.className = "out-of-stock-item"; 
-                    sp.textContent = p.name;
-                    els.outStockList.appendChild(sp); 
-                    c++;
-                }
-            });
+            const has = new Set();
+            openData.forEach(i => has.add(i.itemName));
+            closedData.forEach(i => { if (i.remaining > 0) has.add(i.itemName); });
+            els.outStockList.innerHTML = ''; let c = 0;
+            PRODUCT_DATA.forEach(p => { if(!SERVICE_ITEMS.includes(p.name) && !has.has(p.name)) { els.outStockList.innerHTML += `<span class="out-of-stock-item">${p.name}</span>`; c++; } });
             els.outStockCont.classList.toggle('hidden', c === 0);
         }
 
         function calcBalance() {
-            let totalVenta = 0, totalGanancia = 0;
-            closedData.forEach(i => {
-                totalVenta += (i.usage * i.salePrice);
-                totalGanancia += i.grossProfit;
-            });
-
-            const efectivo = parseInt(els.cashIn.efectivo.value) || 0;
-            const nequi = parseInt(els.cashIn.nequi.value) || 0;
-            const davi = parseInt(els.cashIn.daviplata.value) || 0;
-            
-            let deudasVal = els.cashIn.deudas.getAttribute('data-val');
-            if(!deudasVal) deudasVal = els.cashIn.deudas.value.replace(/[^0-9]/g, ''); 
-            const deudas = parseInt(deudasVal) || 0;
-
-            // NUEVO: GASTOS
-            let gastosVal = els.cashIn.gastos.getAttribute('data-val');
-            if(!gastosVal) gastosVal = els.cashIn.gastos.value.replace(/[^0-9]/g, '');
-            const gastos = parseInt(gastosVal) || 0;
-
-            const totalRindes = efectivo + nequi + davi + deudas + gastos; // SUMA GASTOS
-            const balance = totalRindes - totalVenta;
-
-            els.val.expected.textContent = fmtMoney(totalVenta);
-            els.val.profit.textContent = fmtMoney(totalGanancia);
-            els.val.total.textContent = fmtMoney(totalRindes);
-            els.val.balance.textContent = fmtMoney(balance);
-            
-            els.val.balance.className = `font-mono font-extrabold text-xl ${balance < 0 ? 'text-red-600' : (balance > 0 ? 'text-green-600' : 'text-gray-800')}`;
+            let tv = 0, tg = 0; closedData.forEach(i => { tv += (i.usage * i.salePrice); tg += i.grossProfit; });
+            const ef = parseInt(els.cashIn.efectivo.value)||0, nq = parseInt(els.cashIn.nequi.value)||0, dv = parseInt(els.cashIn.daviplata.value)||0;
+            const du = parseInt(els.cashIn.deudas.getAttribute('data-val')||els.cashIn.deudas.value.replace(/[^0-9]/g, ''))||0;
+            const ga = parseInt(els.cashIn.gastos.getAttribute('data-val')||els.cashIn.gastos.value.replace(/[^0-9]/g, ''))||0;
+            const tr = ef + nq + dv + du + ga; const bal = tr - tv;
+            els.val.expected.textContent = fmtMoney(tv); els.val.profit.textContent = fmtMoney(tg); els.val.total.textContent = fmtMoney(tr); els.val.balance.textContent = fmtMoney(bal);
+            els.val.balance.className = `font-mono font-extrabold text-xl ${bal < 0 ? 'text-red-600' : (bal > 0 ? 'text-green-600' : 'text-gray-800')}`;
         }
 
         let saveTimer;
-        const saveCash = () => {
-            els.syncStatus.textContent = '🔄 Guardando...';
-            setDoc(doc(db, COL_CASH, DOC_CASH), {
-                efectivo: parseInt(els.cashIn.efectivo.value)||0,
-                nequi: parseInt(els.cashIn.nequi.value)||0,
-                daviplata: parseInt(els.cashIn.daviplata.value)||0
-            }, {merge:true}).then(() => els.syncStatus.textContent = '✅ Guardado');
-        };
+        const saveCash = () => { els.syncStatus.textContent = '🔄 Guardando...'; setDoc(doc(db, COL_CASH, DOC_CASH), { efectivo: parseInt(els.cashIn.efectivo.value)||0, nequi: parseInt(els.cashIn.nequi.value)||0, daviplata: parseInt(els.cashIn.daviplata.value)||0 }, {merge:true}).then(() => els.syncStatus.textContent = '✅ Guardado'); };
         [els.cashIn.efectivo, els.cashIn.nequi, els.cashIn.daviplata].forEach(i => i.addEventListener('input', () => { calcBalance(); clearTimeout(saveTimer); saveTimer = setTimeout(saveCash, 1000); }));
+        
+        // Guardar Notas
+        let notesTimer;
+        els.notes.area.addEventListener('input', () => {
+            clearTimeout(notesTimer); els.notes.sync.textContent = '🔄 Guardando...';
+            notesTimer = setTimeout(() => {
+                setDoc(doc(db, COL_CASH, DOC_CASH), { notes: els.notes.area.value }, {merge:true}).then(() => els.notes.sync.textContent = '✅ Sincronizado');
+            }, 1000);
+        });
 
         const logAction = (act, det) => addDoc(collection(db, COL_LOGS), { action: act, details: det, timestamp: new Date(), user: userId });
 
-        // LÓGICA DEUDORES
-        els.debt.btn.onclick = () => { els.debt.modal.classList.remove('pointer-events-none', 'opacity-0'); els.debt.modal.classList.add('open'); els.debt.name.focus(); };
-        els.debt.close.onclick = () => { els.debt.modal.classList.remove('open'); els.debt.modal.classList.add('pointer-events-none', 'opacity-0'); };
-        
-        els.debt.form.onsubmit = async (e) => {
-            e.preventDefault();
-            const name = els.debt.name.value.trim();
-            const amt = parseInt(els.debt.amt.value);
-            if(!name || amt <= 0) return;
-            await addDoc(collection(db, COL_DEBTORS), { name: name, amount: amt, date: new Date() });
-            logAction('Nuevo Fiado', `${name}: ${fmtMoney(amt)}`);
-            els.debt.name.value = ''; els.debt.amt.value = ''; els.debt.name.focus();
-        };
+        els.debt.btn.onclick = () => { els.debt.modal.classList.remove('pointer-events-none', 'opacity-0'); els.debt.modal.classList.add('open'); }; els.debt.close.onclick = () => { els.debt.modal.classList.remove('open'); els.debt.modal.classList.add('pointer-events-none', 'opacity-0'); };
+        els.debt.form.onsubmit = async (e) => { e.preventDefault(); const n = els.debt.name.value.trim(), a = parseInt(els.debt.amt.value); if(!n || a<=0) return; await addDoc(collection(db, COL_DEBTORS), { name: n, amount: a, date: new Date() }); logAction('Nuevo Fiado', `${n}: ${fmtMoney(a)}`); els.debt.name.value=''; els.debt.amt.value=''; };
+        window.deleteDebtor = async (id, name) => { if(confirm(`¿Borrar deuda de ${name}?`)) { await deleteDoc(doc(db, COL_DEBTORS, id)); logAction('Pago Fiado', `Eliminado: ${name}`); } };
 
-        window.deleteDebtor = async (id, name) => {
-            if(!confirm(`¿Borrar deuda de ${name}?`)) return;
-            await deleteDoc(doc(db, COL_DEBTORS, id));
-            logAction('Pago Fiado', `Eliminado: ${name}`);
-        };
+        els.expense.btn.onclick = () => { els.expense.modal.classList.remove('pointer-events-none', 'opacity-0'); els.expense.modal.classList.add('open'); }; els.expense.close.onclick = () => { els.expense.modal.classList.remove('open'); els.expense.modal.classList.add('pointer-events-none', 'opacity-0'); };
+        els.expense.form.onsubmit = async (e) => { e.preventDefault(); const c = els.expense.concept.value.trim(), a = parseInt(els.expense.amt.value); if(!c || a<=0) return; await addDoc(collection(db, COL_EXPENSES), { concept: c, amount: a, date: new Date() }); logAction('Nuevo Gasto', `${c}: ${fmtMoney(a)}`); els.expense.concept.value=''; els.expense.amt.value=''; };
+        window.deleteExpense = async (id, concept) => { if(confirm(`¿Eliminar gasto: ${concept}?`)) { await deleteDoc(doc(db, COL_EXPENSES, id)); logAction('Borrar Gasto', `Eliminado: ${concept}`); } };
 
-        // NUEVO: LÓGICA GASTOS
-        els.expense.btn.onclick = () => { els.expense.modal.classList.remove('pointer-events-none', 'opacity-0'); els.expense.modal.classList.add('open'); els.expense.concept.focus(); };
-        els.expense.close.onclick = () => { els.expense.modal.classList.remove('open'); els.expense.modal.classList.add('pointer-events-none', 'opacity-0'); };
-        
-        els.expense.form.onsubmit = async (e) => {
-            e.preventDefault();
-            const concept = els.expense.concept.value.trim();
-            const amt = parseInt(els.expense.amt.value);
-            if(!concept || amt <= 0) return;
-            await addDoc(collection(db, COL_EXPENSES), { concept: concept, amount: amt, date: new Date() });
-            logAction('Nuevo Gasto', `${concept}: ${fmtMoney(amt)}`);
-            els.expense.concept.value = ''; els.expense.amt.value = ''; els.expense.concept.focus();
-        };
-
-        window.deleteExpense = async (id, concept) => {
-            if(!confirm(`¿Eliminar gasto: ${concept}?`)) return;
-            await deleteDoc(doc(db, COL_EXPENSES, id));
-            logAction('Borrar Gasto', `Eliminado: ${concept}`);
-        };
-
-        els.itemSelect.onchange = () => {
-            const p = PRODUCT_DATA.find(x => x.name === els.itemSelect.value);
-            if(p) { els.saleIn.value = p.sale; els.costIn.value = p.cost; }
-        };
+        els.itemSelect.onchange = () => { const p = PRODUCT_DATA.find(x => x.name === els.itemSelect.value); if(p) { els.saleIn.value = p.sale; els.costIn.value = p.cost; } };
 
         els.deliveryForm.onsubmit = async (e) => {
             e.preventDefault();
-            const name = els.itemSelect.value;
-            const qty = parseInt(document.getElementById('quantity-delivered').value);
-            const price = parseInt(els.saleIn.value);
-            const cost = parseInt(els.costIn.value);
-            
+            const name = els.itemSelect.value, qty = parseInt(document.getElementById('quantity-delivered').value);
+            const price = parseInt(els.saleIn.value), cost = parseInt(els.costIn.value);
             if(!name || qty <= 0) return;
+
+            // RESTRICCIÓN PARA NO DUPLICAR
+            if (isItemClosed(name)) {
+                alert(`⚠️ El producto "${name}" ya está cerrado en el reporte de hoy.\n\nSi necesitas agregar más, borra primero el reporte cerrado para reabrir el inventario.`);
+                return;
+            }
 
             const q = query(collection(db, COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN"));
             const snap = await getDocs(q);
-
             if(!snap.empty) {
-                const d = snap.docs[0];
-                await updateDoc(d.ref, { received: d.data().received + qty, dateOpened: new Date(), salePrice: price, unitCost: cost });
+                const d = snap.docs[0]; await updateDoc(d.ref, { received: d.data().received + qty, dateOpened: new Date(), salePrice: price, unitCost: cost });
                 logAction('Actualizar', `${name} +${qty}`);
             } else {
-                await addDoc(collection(db, COL_INVENTORY), {
-                    itemName: name, received: qty, remaining: 0, usage: 0, grossProfit: 0,
-                    salePrice: price, unitCost: cost, unitProfit: price - cost,
-                    status: 'OPEN', dateOpened: new Date()
-                });
+                await addDoc(collection(db, COL_INVENTORY), { itemName: name, received: qty, remaining: 0, usage: 0, grossProfit: 0, salePrice: price, unitCost: cost, unitProfit: price - cost, status: 'OPEN', dateOpened: new Date() });
                 logAction('Entrada', `${name} (${qty})`);
             }
-            showMsg(els.delMsg, 'Guardado con éxito', 'text-green-600');
-            els.deliveryForm.reset();
+            showMsg(els.delMsg, 'Guardado con éxito', 'text-green-600'); els.deliveryForm.reset();
         };
 
         els.quickForm.onsubmit = async (e) => {
             e.preventDefault();
-            const type = els.quickType.value;
-            const count = parseInt(els.quickCount.value);
+            const type = els.quickType.value, count = parseInt(els.quickCount.value);
             if(!type || count <= 0) return;
-
             const p = PRODUCT_DATA.find(x => x.name === type);
-            const cost = p ? p.cost : 0;
-            const price = parseInt(els.quickType.options[els.quickType.selectedIndex].dataset.price);
-            const profit = price - cost; 
-
-            const closedItems = closedData.filter(i => i.itemName === type);
-            const existing = closedItems.length > 0 ? closedItems[closedItems.length - 1] : null;
+            const cost = p ? p.cost : 0, price = parseInt(els.quickType.options[els.quickType.selectedIndex].dataset.price), profit = price - cost; 
+            const closedItems = closedData.filter(i => i.itemName === type); const existing = closedItems.length > 0 ? closedItems[closedItems.length - 1] : null;
 
             if (existing) {
-                const newUsage = existing.usage + count;
-                const newRecv = existing.received + count;
-                const newTotalProfit = newUsage * profit;
-                
-                await updateDoc(doc(db, COL_INVENTORY, existing.id), {
-                    usage: newUsage,
-                    received: newRecv,
-                    grossProfit: newTotalProfit,
-                    dateClosed: new Date()
-                });
-                logAction('Venta Rápida (+)', `${type} +${count} (Total: ${newUsage})`);
+                const newUsage = existing.usage + count, newRecv = existing.received + count;
+                await updateDoc(doc(db, COL_INVENTORY, existing.id), { usage: newUsage, received: newRecv, grossProfit: newUsage * profit, dateClosed: new Date() });
+                logAction('Venta Rápida (+)', `${type} +${count}`);
             } else {
-                await addDoc(collection(db, COL_INVENTORY), {
-                    itemName: type, received: count, remaining: 0, usage: count, grossProfit: count * profit,
-                    salePrice: price, unitCost: cost, unitProfit: profit,
-                    status: 'CLOSED', dateOpened: new Date(), dateClosed: new Date()
-                });
+                await addDoc(collection(db, COL_INVENTORY), { itemName: type, received: count, remaining: 0, usage: count, grossProfit: count * profit, salePrice: price, unitCost: cost, unitProfit: profit, status: 'CLOSED', dateOpened: new Date(), dateClosed: new Date() });
                 logAction('Venta Rápida', `${type} x${count}`);
             }
-            
-            showMsg(els.quickMsg, 'Registrado', 'text-green-600');
-            els.quickCount.value = '';
+            showMsg(els.quickMsg, 'Registrado', 'text-green-600'); els.quickCount.value = '';
         };
 
-        window.delItem = async (id) => {
-            if(!confirm("¿Eliminar este registro permanentemente?")) return;
-            await deleteDoc(doc(db, COL_INVENTORY, id));
-            logAction('Eliminar', `ID: ${id}`);
-        };
+        window.delItem = async (id) => { if(confirm("¿Eliminar registro permanentemente?")) { await deleteDoc(doc(db, COL_INVENTORY, id)); logAction('Eliminar', `ID: ${id}`); } };
+        window.restoreItem = async (id) => { if(confirm("¿Reabrir este producto?")) { await updateDoc(doc(db, COL_INVENTORY, id), { status: 'OPEN', remaining: 0, usage: 0, grossProfit: 0, dateClosed: null }); } };
 
-        window.restoreItem = async (id) => {
-            if(!confirm("¿Reabrir este producto para corregirlo?")) return;
-            const ref = doc(db, COL_INVENTORY, id);
-            await updateDoc(ref, {
-                status: 'OPEN',
-                remaining: 0,
-                usage: 0,
-                grossProfit: 0,
-                dateClosed: null
-            });
-            logAction('Reabrir', `ID: ${id} restaurado a inventario`);
-        };
-
-        window.prepClose = (id, name, recv, sale, cost) => {
-            els.modal.mId.value = id;
-            els.modal.mName.textContent = name;
-            els.modal.mRecv.textContent = recv;
-            els.modal.mForm.dataset.recv = recv;
-            els.modal.mForm.dataset.sale = sale;
-            els.modal.mForm.dataset.cost = cost;
-            els.modal.self.classList.remove('pointer-events-none', 'opacity-0');
-            els.modal.self.classList.add('open');
-            els.modal.mRem.value = '';
-            els.modal.mRem.focus();
-        };
-
+        window.prepClose = (id, name, recv, sale, cost) => { els.modal.mId.value = id; els.modal.mName.textContent = name; els.modal.mRecv.textContent = recv; els.modal.mForm.dataset.recv = recv; els.modal.mForm.dataset.sale = sale; els.modal.mForm.dataset.cost = cost; els.modal.self.classList.remove('pointer-events-none', 'opacity-0'); els.modal.self.classList.add('open'); els.modal.mRem.value = ''; els.modal.mRem.focus(); };
         els.modal.mCancel.onclick = () => { els.modal.self.classList.remove('open'); els.modal.self.classList.add('pointer-events-none', 'opacity-0'); };
-        
-        els.modal.mForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const rem = parseInt(els.modal.mRem.value);
-            const recv = parseInt(els.modal.mForm.dataset.recv);
-            const sale = parseInt(els.modal.mForm.dataset.sale);
-            const cost = parseInt(els.modal.mForm.dataset.cost);
-            
-            if(rem > recv) return alert("Error: Restantes mayor a recibidos");
+        els.modal.mForm.onsubmit = async (e) => { e.preventDefault(); const rem = parseInt(els.modal.mRem.value), recv = parseInt(els.modal.mForm.dataset.recv), sale = parseInt(els.modal.mForm.dataset.sale), cost = parseInt(els.modal.mForm.dataset.cost); if(rem > recv) return alert("Error: Restantes mayor a recibidos"); const usage = recv - rem; await updateDoc(doc(db, COL_INVENTORY, els.modal.mId.value), { remaining: rem, usage: usage, grossProfit: usage * (sale - cost), status: 'CLOSED', dateClosed: new Date() }); els.modal.mCancel.click(); };
 
-            const usage = recv - rem;
-            const profit = usage * (sale - cost);
-
-            await updateDoc(doc(db, COL_INVENTORY, els.modal.mId.value), {
-                remaining: rem, usage: usage, grossProfit: profit,
-                status: 'CLOSED', dateClosed: new Date()
-            });
-            logAction('Cierre', `${els.modal.mName.textContent}: ${recv}->${rem}`);
-            els.modal.mCancel.click();
-        };
-
-        // FUNCIÓN REESCRITA Y MEJORADA PARA CARGAR SOBRAS (MODIFICADA)
         els.btns.reloadLeftovers.onclick = async () => {
-            
-            // 1. Agrupar por producto, quedándonos solo con el registro más reciente (fecha de cierre más nueva)
             const latestRecords = {};
-            
-            // closedData ya viene ordenado por fecha de cierre descendente (del más nuevo al más viejo)
-            const sortedClosed = [...closedData].sort((a,b) => (b.dateClosed?.getTime() || 0) - (a.dateClosed?.getTime() || 0));
+            [...closedData].sort((a,b) => (b.dateClosed?.getTime() || 0) - (a.dateClosed?.getTime() || 0)).forEach(item => { if(!latestRecords[item.itemName]) latestRecords[item.itemName] = item; });
+            const leftovers = {}; Object.values(latestRecords).forEach(item => { const sobra = parseInt(item.remaining) || 0; if(sobra > 0) leftovers[item.itemName] = sobra; });
+            if(Object.keys(leftovers).length === 0) return alert("No hay sobrantes en el reporte.");
+            let msg = "Sobrantes a cargar:\n"; for (const [n, q] of Object.entries(leftovers)) msg += `• ${n}: ${q}\n`;
+            if(!confirm(msg + "\n¿Confirmar?")) return;
 
-            sortedClosed.forEach(item => {
-                if(!latestRecords[item.itemName]) {
-                    // Si es el primero que encontramos (el más reciente), lo guardamos
-                    latestRecords[item.itemName] = item;
-                }
-            });
-
-            // 2. Extraer sobrantes solo de esos registros recientes
-            const leftovers = {};
-            Object.values(latestRecords).forEach(item => {
-                const sobra = parseInt(item.remaining) || 0;
-                if(sobra > 0) {
-                    leftovers[item.itemName] = sobra;
-                }
-            });
-
-            if(Object.keys(leftovers).length === 0) return alert("No hay sobrantes registrados en el reporte para cargar.");
-
-            // 3. Mensaje de confirmación detallado
-            let msg = "Se cargarán los siguientes sobrantes a barra (basado en el ÚLTIMO cierre):\n\n";
+            let c = 0;
             for (const [name, qty] of Object.entries(leftovers)) {
-                msg += `• ${name}: ${qty} unidades\n`;
+                // RESTRICCIÓN PARA CARGA DE SOBRANTES
+                const p = PRODUCT_DATA.find(x => x.name === name); const price = p ? p.sale : 0, cost = p ? p.cost : 0, profit = price - cost;
+                const snap = await getDocs(query(collection(db, COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN")));
+                if(!snap.empty) { await updateDoc(snap.docs[0].ref, { received: parseInt(snap.docs[0].data().received) + qty, dateOpened: new Date() }); }
+                else { await addDoc(collection(db, COL_INVENTORY), { itemName: name, received: qty, remaining: 0, usage: 0, grossProfit: 0, salePrice: price, unitCost: cost, unitProfit: profit, status: 'OPEN', dateOpened: new Date() }); }
+                c++;
             }
-            msg += "\n¿Confirmar carga?";
-
-            if(!confirm(msg)) return;
-
-            // 4. Ejecutar Carga
-            let count = 0;
-            const batchLog = [];
-
-            for (const [name, qty] of Object.entries(leftovers)) {
-                const p = PRODUCT_DATA.find(x => x.name === name);
-                const price = p ? p.sale : 0;
-                const cost = p ? p.cost : 0;
-                const profit = price - cost;
-
-                // Buscar si ya existe abierto para SUMARLE
-                const q = query(collection(db, COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN"));
-                const snap = await getDocs(q);
-                
-                if(!snap.empty) {
-                     const d = snap.docs[0];
-                     const currentQty = parseInt(d.data().received) || 0;
-                     await updateDoc(d.ref, { 
-                         received: currentQty + qty, // Sumar lo que había + lo que sobró
-                         dateOpened: new Date() 
-                     });
-                } else {
-                     await addDoc(collection(db, COL_INVENTORY), {
-                        itemName: name, 
-                        received: qty, // La entrada es EXACTAMENTE lo que sobró
-                        remaining: 0, 
-                        usage: 0, 
-                        grossProfit: 0,
-                        salePrice: price, 
-                        unitCost: cost, 
-                        unitProfit: profit,
-                        status: 'OPEN', 
-                        dateOpened: new Date()
-                    });
-                }
-                count++;
-                batchLog.push(`${name}: ${qty}`);
-            }
-            
-            logAction('Carga Sobrantes', `Se pasaron ${count} items a barra: ${batchLog.join(', ')}`);
-            alert(`Proceso completado. Se cargaron ${count} productos a la barra basados en los sobrantes.`);
+            alert(`Cargados ${c} productos a barra.`);
         };
 
         els.btns.closePending.onclick = async () => {
-            if(!openData.length) return alert("No hay productos abiertos.");
-            if(!confirm("¿Cerrar todos los productos abiertos asumiendo CERO ventas (Intactos)?")) return;
-            let count = 0;
+            if(!openData.length) return alert("No hay abiertos."); if(!confirm("¿Cerrar todo asumiendo CERO ventas?")) return;
             for(const item of openData) {
                 if(SERVICE_ITEMS.includes(item.itemName)) continue;
-                const ref = doc(db, COL_INVENTORY, item.id);
-                await updateDoc(ref, {
-                    remaining: item.received,
-                    usage: 0,
-                    grossProfit: 0,
-                    status: 'CLOSED',
-                    dateClosed: new Date()
-                });
-                count++;
+                await updateDoc(doc(db, COL_INVENTORY, item.id), { remaining: item.received, usage: 0, grossProfit: 0, status: 'CLOSED', dateClosed: new Date() });
             }
-            logAction('Cierre Masivo', `Se cerraron ${count} items sin ventas.`);
         };
 
-
-        els.hist.btn.onclick = async () => {
-            els.hist.modal.classList.remove('pointer-events-none', 'opacity-0');
-            els.hist.modal.classList.add('open');
-            els.hist.list.innerHTML = '<p class="text-center p-4">Cargando...</p>';
-            const snap = await getDocs(query(collection(db, COL_LOGS), limit(50)));
-            const logs = []; snap.forEach(d => logs.push(d.data()));
-            logs.sort((a,b) => b.timestamp.toDate() - a.timestamp.toDate());
+        // HISTORIAL AGRUPADO INTELIGENTE (LAPSO DE 30 MINUTOS)
+        els.hist.btn.onclick = async () => { 
+            els.hist.modal.classList.remove('pointer-events-none', 'opacity-0'); els.hist.modal.classList.add('open'); 
+            els.hist.list.innerHTML = '<p class="text-center p-4">Cargando...</p>'; 
+            const snap = await getDocs(query(collection(db, COL_LOGS), limit(100))); 
+            const logs = []; snap.forEach(d => logs.push(d.data())); 
+            logs.sort((a,b) => b.timestamp.toDate() - a.timestamp.toDate()); 
             
-            els.hist.list.innerHTML = logs.map(l => {
-                let content = l.details;
-                if (content.includes('\n')) {
-                    const parts = content.split('\n');
-                    const header = parts[0]; 
-                    const body = parts.slice(1).join('\n');
-                    content = `
-                        <div>${header}</div>
-                        <details class="group mt-1">
-                            <summary class="cursor-pointer text-blue-600 font-bold text-[10px] hover:underline select-none">Ver Detalle</summary>
-                            <pre class="text-[10px] text-gray-500 whitespace-pre-wrap pl-2 border-l-2 border-blue-200 mt-1 font-mono bg-gray-50 p-1 rounded">${body}</pre>
-                        </details>
-                    `;
+            const groupedLogs = [];
+            logs.forEach(l => {
+                const time = l.timestamp.toDate();
+                const lastGroup = groupedLogs[groupedLogs.length - 1];
+                // Agrupar si es la misma acción y ocurrió con menos de 30 minutos de diferencia (1.800.000 ms)
+                if (lastGroup && lastGroup.action === l.action && Math.abs(lastGroup.time - time) < 1800000) {
+                    lastGroup.details.push(l.details);
+                    lastGroup.time = time; 
+                } else {
+                    groupedLogs.push({ action: l.action, time: time, details: [l.details] });
                 }
-                return `
-                    <div class="history-item">
-                        <div class="flex justify-between font-bold"><span>${l.action}</span> <span class="text-gray-400 text-xs">${fmtDate(l.timestamp.toDate())}</span></div>
-                        <div class="text-xs text-gray-600">${content}</div>
-                    </div>
-                `;
-            }).join('');
+            });
+
+            els.hist.list.innerHTML = groupedLogs.map(g => {
+                if (g.details.length === 1) {
+                    return `<div class="history-item"><div class="flex justify-between font-bold"><span>${g.action}</span><span class="text-gray-400 text-xs">${fmtDate(g.time)}</span></div><div class="text-xs text-gray-600">${g.details[0]}</div></div>`;
+                } else {
+                    return `<div class="history-item bg-blue-50 cursor-pointer select-none border border-blue-100 rounded mb-1" ondblclick="this.querySelector('.details-list').classList.toggle('hidden')">
+                        <div class="flex justify-between font-bold text-blue-800">
+                            <span>${g.action} (${g.details.length} items)</span>
+                            <span class="text-gray-400 text-xs">${fmtDate(g.time)}</span>
+                        </div>
+                        <div class="text-[10px] text-blue-500 mb-1">🖱️ Doble clic para ver detalles</div>
+                        <ul class="details-list hidden mt-1 pl-2 border-l-2 border-blue-300 text-xs text-gray-700 space-y-1">
+                            ${g.details.map(d => `<li>• ${d.split('\n')[0]}</li>`).join('')}
+                        </ul>
+                    </div>`;
+                }
+            }).join(''); 
         };
         els.hist.close.onclick = () => { els.hist.modal.classList.remove('open'); els.hist.modal.classList.add('pointer-events-none', 'opacity-0'); };
-        els.hist.clear.onclick = async () => {
-            if(!confirm("¿Borrar TODO el historial?")) return;
-            const snap = await getDocs(collection(db, COL_LOGS));
-            snap.forEach(d => deleteDoc(d.ref));
-            els.hist.list.innerHTML = '<p class="text-center p-4">Borrado.</p>';
-        };
+        els.hist.clear.onclick = async () => { if(confirm("¿Borrar historial?")) { const s = await getDocs(collection(db, COL_LOGS)); s.forEach(d => deleteDoc(d.ref)); els.hist.list.innerHTML = 'Borrado.'; } };
 
         els.btns.resetOpen.onclick = async () => { if(confirm("¿Reiniciar stock abierto?")) openData.forEach(i => deleteDoc(doc(db, COL_INVENTORY, i.id))); };
         els.btns.resetClosed.onclick = async () => { if(confirm("¿Borrar reporte cerrado?")) closedData.forEach(i => deleteDoc(doc(db, COL_INVENTORY, i.id))); };
         
+        // REPORTE EXCEL CON TOTALES AL FINAL
         els.btns.export.onclick = () => {
-            const rows = [["Producto","Entrada","Salida (Sobra)","Uso","Venta","Costo","Ganancia"]];
-            EXPORT_ORDER.forEach(prodName => {
-                const item = closedData.find(d => d.itemName === prodName);
+            const rows = [["Producto","Entrada","Salida (Sobra)","Uso","Venta Unid.","Total Venta","Total Costo","Ganancia"]];
+            let sumUso = 0, sumVenta = 0, sumCosto = 0, sumGanancia = 0;
+
+            EXPORT_ORDER.forEach(pn => {
+                const item = closedData.find(d => d.itemName === pn);
                 if (item) {
-                    rows.push([item.itemName, item.received, item.remaining, item.usage, item.salePrice, item.unitCost, item.grossProfit]);
-                } else {
-                    const baseData = PRODUCT_DATA.find(p => p.name === prodName) || {sale: 0, cost: 0};
-                    rows.push([prodName, 0, 0, 0, baseData.sale, baseData.cost, 0]);
+                    const totalVenta = item.usage * item.salePrice;
+                    const totalCosto = item.usage * item.unitCost;
+                    rows.push([item.itemName, item.received, item.remaining, item.usage, item.salePrice, totalVenta, totalCosto, item.grossProfit]);
+                    sumUso += item.usage; sumVenta += totalVenta; sumCosto += totalCosto; sumGanancia += item.grossProfit;
+                }
+                else {
+                    const base = PRODUCT_DATA.find(p=>p.name===pn)||{sale:0, cost:0};
+                    rows.push([pn, 0, 0, 0, base.sale, 0, 0, 0]);
                 }
             });
 
+            // FILA DE TOTALES GENERALES
             rows.push([]);
-            rows.push(["EFECTIVO", els.cashIn.efectivo.value]);
-            rows.push(["NEQUI", els.cashIn.nequi.value]);
-            rows.push(["DAVIPLATA", els.cashIn.daviplata.value]);
+            rows.push(["TOTALES GENERALES", "", "", sumUso, "", sumVenta, sumCosto, sumGanancia]);
+            rows.push([]);
+
+            rows.push(["EFECTIVO", els.cashIn.efectivo.value]); rows.push(["NEQUI", els.cashIn.nequi.value]); rows.push(["DAVIPLATA", els.cashIn.daviplata.value]); rows.push(["DEUDAS", els.cashIn.deudas.getAttribute('data-val')||0]); rows.push(["GASTOS", els.cashIn.gastos.getAttribute('data-val')||0]); rows.push(["TOTAL RINDES", els.val.total.textContent]); rows.push(["BALANCE FINAL", els.val.balance.textContent]);
             
-            let deudasVal = els.cashIn.deudas.getAttribute('data-val') || 0;
-            rows.push(["DEUDAS", deudasVal]);
+            // AGREGAR NOTAS DE TURNO AL FINAL DEL EXCEL
+            rows.push([]);
+            rows.push(["NOTAS DE TURNO", els.notes.area.value]);
 
-            // NUEVO: EXPORTAR TOTAL GASTOS
-            let gastosVal = els.cashIn.gastos.getAttribute('data-val') || 0;
-            rows.push(["GASTOS", gastosVal]);
-            
-            rows.push(["TOTAL RINDES", els.val.total.textContent]);
-            rows.push(["BALANCE FINAL", els.val.balance.textContent]);
-
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Reporte");
-
-            // HOJA ADICIONAL: DEUDORES
-            const debtorRows = [["Nombre", "Monto"]];
-            debtorsData.forEach(d => debtorRows.push([d.name, d.amount]));
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(debtorRows), "Lista Deudores");
-
-            // NUEVA HOJA ADICIONAL: GASTOS
-            const expenseRows = [["Concepto", "Monto"]];
-            expensesData.forEach(e => expenseRows.push([e.concept, e.amount]));
-            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(expenseRows), "Lista Gastos");
-
+            const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Reporte");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Nombre", "Monto"], ...debtorsData.map(d=>[d.name,d.amount])]), "Deudores");
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([["Concepto", "Monto"], ...expensesData.map(e=>[e.concept,e.amount])]), "Gastos");
             XLSX.writeFile(wb, `Reporte_${new Date().toISOString().split('T')[0]}.xlsx`);
         };
 
         els.imp.btn.onclick = () => {
-            const f = els.imp.input.files[0];
-            if(!f) return;
-            const r = new FileReader();
-            
+            const f = els.imp.input.files[0]; if(!f) return; const r = new FileReader();
             r.onload = async (e) => {
-                let rows = [];
-                if(f.name.endsWith('.csv') || f.name.endsWith('.txt')) {
-                    rows = e.target.result.split('\n').map(x => x.split(x.includes(';')?';':','));
-                } else {
-                    const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
-                    rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1});
-                }
+                let rows = [], c = 0;
+                if(f.name.endsWith('.csv') || f.name.endsWith('.txt')) rows = e.target.result.split('\n').map(x => x.split(x.includes(';')?';':','));
+                else { const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'}); rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header:1}); }
                 
-                let count = 0;
-                let summaryList = [];
-
                 for (let i = 1; i < rows.length; i++) {
-                    const row = rows[i];
-                    const name = row[0]?.trim();
-                    const qty = parseInt(row[1]);
-                    const p = PRODUCT_DATA.find(x => x.name === name);
-                    
+                    const name = rows[i][0]?.trim(), qty = parseInt(rows[i][1]), p = PRODUCT_DATA.find(x => x.name === name);
                     if(p && qty > 0) {
-                        const profit = p.sale - p.cost;
-                        const q = query(collection(db, COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN"));
-                        const snap = await getDocs(q);
-                        
-                        if(!snap.empty) {
-                            const d = snap.docs[0];
-                            await updateDoc(d.ref, { received: d.data().received + qty, dateOpened: new Date() });
-                        } else {
-                            await addDoc(collection(db, COL_INVENTORY), {
-                                itemName: name, received: qty, remaining: 0, usage: 0, grossProfit: 0,
-                                salePrice: p.sale, unitCost: p.cost, unitProfit: profit,
-                                status: 'OPEN', dateOpened: new Date()
-                            });
-                        }
-                        count++;
-                        summaryList.push(`• ${qty} ${name}`);
+                        if (isItemClosed(name)) continue; 
+                        const snap = await getDocs(query(collection(db, COL_INVENTORY), where("itemName","==",name), where("status","==","OPEN")));
+                        if(!snap.empty) await updateDoc(snap.docs[0].ref, { received: snap.docs[0].data().received + qty, dateOpened: new Date() });
+                        else await addDoc(collection(db, COL_INVENTORY), { itemName: name, received: qty, remaining: 0, usage: 0, grossProfit: 0, salePrice: p.sale, unitCost: p.cost, unitProfit: p.sale - p.cost, status: 'OPEN', dateOpened: new Date() });
+                        c++;
                     }
                 }
-
-                if (count > 0) {
-                    const detailedLog = `Total cargados: ${count} registros:\n` + summaryList.join('\n');
-                    logAction('Importación Masiva', detailedLog);
-                    showMsg(els.imp.msg, `Procesados ${count} registros`, 'text-green-600');
-                } else {
-                    showMsg(els.imp.msg, `No se encontraron items válidos`, 'text-red-600');
-                }
-                els.imp.input.value = '';
+                showMsg(els.imp.msg, c>0 ? `Procesados ${c} registros` : `No válidos o ya cerrados`, c>0 ? 'text-green-600' : 'text-red-600'); els.imp.input.value = '';
             };
             f.name.endsWith('x') ? r.readAsArrayBuffer(f) : r.readAsText(f);
         };
